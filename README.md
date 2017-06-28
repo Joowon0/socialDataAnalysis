@@ -1,6 +1,4 @@
-# Project Title
-
-Dynamic social data analysis using event processing systems
+# Dynamic social data analysis using event processing systems
 
 ## Getting Started
 
