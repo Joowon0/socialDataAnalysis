@@ -4,7 +4,7 @@ package twitter
   * Created by syndr on 2017-07-19.
   */
 
-case class twitterText() {
+case class commentText() {
 
 }
 
