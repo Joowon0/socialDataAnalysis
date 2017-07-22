@@ -4,9 +4,9 @@ import scala.collection.parallel.mutable.ParHashMap
 
 object Query1 {
   object TOP3 {
-    val post1 : Post() = ??? // this should be initiated into empty post
-    val post2 : Post() = ???
-    val post3 : Post() = ???
+    val post1 : Post = ??? // this should be initiated into empty post
+    val post2 : Post = ???
+    val post3 : Post = ???
   }
 
   // given a comment ID, albe to find corresponding post
