@@ -6,10 +6,10 @@ import java.text.{DateFormat, SimpleDateFormat}
 import java.util.Date
 
 /**
-  * Created by syndr on 2017-07-19.
+  * Created by syndr on 2017-08-08.
   */
-object friendshipsData {
 
+package object FriendshipsData {
   private[twitter] def filePath = {
     val resource = this.getClass.getClassLoader.getResource("twitter/friendships.dat")
     if (resource == null) sys.error("friendships.dat == null")

@@ -8,7 +8,7 @@ import java.util.Date
 /**
   * Created by syndr on 2017-07-19.
   */
-object commentsData {
+object CommentsData {
 
   private[twitter] def filePath = {
     val resource = this.getClass.getClassLoader.getResource("twitter/comments.dat")
