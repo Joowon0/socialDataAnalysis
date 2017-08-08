@@ -1,10 +1,11 @@
 package realTime
 
 /**
-  * A class for handling posts and comments
+  * Class for handling posts and comments
   */
 
 import scala.collection.parallel.mutable.ParHashSet
+import java.util.Date
 
 trait Writing {
   def getScore() : Int
@@ -21,7 +22,7 @@ case class Post(timestamp: Timestamp) extends Writing {
     comments + comment
 }
 
-case class Comment ( commentID: Long, timestamp: Timestamp) extends  Writing {
+case class Comment (commentID: Long, timestamp: Timestamp) extends Writing {
   def getScore() = timestamp.score()
 }
 
@@ -29,7 +30,12 @@ case object Empty extends Writing {
   def getScore(): Int = 0
 }
 
-class Timestamp {
-  val timestamp = ???
+// use method Date(int year, int month, int date) for new Date
+class Timestamp(timestamp: Date) {
   val score = Var(10)
+
+  def decrease() : Unit = {
+    val temp = score()
+    score() = temp - 1
+  }
 }
