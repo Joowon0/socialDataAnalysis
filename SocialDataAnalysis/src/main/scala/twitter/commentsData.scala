@@ -6,10 +6,9 @@ import java.text.{DateFormat, SimpleDateFormat}
 import java.util.Date
 
 /**
-  * Created by syndr on 2017-07-19.
+  * Created by syndr on 2017-08-09.
   */
-object commentsData {
-
+object CommentsData {
   private[twitter] def filePath = {
     val resource = this.getClass.getClassLoader.getResource("twitter/comments.dat")
     if (resource == null) sys.error("comments.dat == null")
