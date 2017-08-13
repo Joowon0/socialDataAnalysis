@@ -2,6 +2,8 @@ package wikipedia
 
 import java.sql.Timestamp
 
+import common._
+
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -77,6 +79,10 @@ object WikipediaRanking {
    *   Note: this operation is long-running. It can potentially run for
    *   several seconds.
    */
+  def findTop3(commentRDD: RDD[CommentInfo], postsRDD: RDD[PostInfo]): List[(String, Int)] = {
+task()
+  }
+
   ///def rankLangs(langs: List[String], rdd: RDD[WikipediaArticle]): List[(String, Int)] = ???
 
   /* Compute an inverted index of the set of articles, mapping each language
