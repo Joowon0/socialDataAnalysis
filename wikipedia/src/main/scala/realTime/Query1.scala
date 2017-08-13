@@ -59,5 +59,4 @@ object Query1 {
   def findTop3(): List[Post] = TOP3.getTopPosts()
   def findTop3(posts: ThreePosts): List[Post] = posts.getTopPosts()
 
-
 }

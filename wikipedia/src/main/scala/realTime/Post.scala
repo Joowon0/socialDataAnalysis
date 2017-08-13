@@ -17,7 +17,7 @@ case class Post(timestamp: Timestamp) extends Writing {
   val comments : ParHashSet[Comment] = ParHashSet()
 
   def update(): Unit =
-    totalScore() = comments map (_.getScore()) sum
+    totalScore() = (comments map (_.getScore()) sum) + timestamp.score()
   def addComment(comment: Comment) : Unit =
     comments + comment
 }
