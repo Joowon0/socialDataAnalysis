@@ -17,7 +17,7 @@ class ThreePosts {
       val p1 = post1()
       val p2 = post2()
 
-      post1() = post()
+      post1() = post
       post2() = p1
       post3() = p2
     }
@@ -25,10 +25,10 @@ class ThreePosts {
       val p2 = post2()
 
       post3() = p2
-      post2() = post()
+      post2() = post
     }
     else if (post.getScore() >= post3().getScore()) {
-      post3() = post()
+      post3() = post
     }
 
   // get top 3 posts that do not have score 0
