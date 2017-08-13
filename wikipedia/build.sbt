@@ -16,6 +16,12 @@ libraryDependencies ++= assignmentsMap.value.values.flatMap(_.dependencies).toSe
 commonSourcePackages += "common"
 
 assignmentsMap := {
+  val depsCollections = Seq(
+    "com.storm-enroute" %% "scalameter-core" % "0.6",
+    "com.github.scala-blitz" %% "scala-blitz" % "1.1",
+    "org.scala-lang.modules" %% "scala-swing" % "1.0.1",
+    "com.storm-enroute" %% "scalameter" % "0.6" % "test"
+  )
   val depsSpark = Seq(
     "org.apache.spark" %% "spark-core" % "2.1.0"
   )

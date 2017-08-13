@@ -78,6 +78,7 @@ object WikipediaRanking {
    *   Note: this operation is long-running. It can potentially run for
    *   several seconds.
    */
+<<<<<<< HEAD
 
   val threePosts : ThreePosts
 
@@ -88,6 +89,11 @@ object WikipediaRanking {
    * 쓰레드 돌려서 threePosts 변수에 타임스탬프 순으로 insert해줌. 중간에 findTop3하면 현재 시점에서의 top3 포스트가 나옴
    * queue 만들어서 posts를 타임스탬프 순서대로 넣으면 됨
    */
+=======
+  def findTop3(commentRDD: RDD[CommentInfo], postsRDD: RDD[PostInfo]): List[(String, Int)] = {
+
+  }
+>>>>>>> origin/newBranch
 
   ///def rankLangs(langs: List[String], rdd: RDD[WikipediaArticle]): List[(String, Int)] = ???
 
