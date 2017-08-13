@@ -13,6 +13,7 @@ class ThreePosts {
 
   // insert in sorted
   def insert(post : Post): Unit =
+
     if (post.getScore() >= post1().getScore()) {
       val p1 = post1()
       val p2 = post2()
@@ -58,5 +59,8 @@ object Query1 {
   // This part should be changed into parallel
   def findTop3(): List[Post] = TOP3.getTopPosts()
   def findTop3(posts: ThreePosts): List[Post] = posts.getTopPosts()
+<<<<<<< HEAD
+=======
 
+>>>>>>> origin/newBranch
 }
