@@ -6,6 +6,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import realTime.{Post, Query1, ThreePosts}
 
 /*case class WikipediaArticle(title: String, text: String) {
   /**
@@ -77,9 +78,16 @@ object WikipediaRanking {
    *   Note: this operation is long-running. It can potentially run for
    *   several seconds.
    */
-  def findTopThree(commentsRDD : RDD[CommentInfo], postsRDD : RDD[PostInfo]) : List[(String, Int)] = {
-    
+
+  val threePosts : ThreePosts
+
+  def findTop3(commentsRDD : RDD[CommentInfo], postsRDD : RDD[PostInfo]) : List[Post] = {
+    threePosts.getTopPosts()
   }
+  /*
+   * 쓰레드 돌려서 threePosts 변수에 타임스탬프 순으로 insert해줌. 중간에 findTop3하면 현재 시점에서의 top3 포스트가 나옴
+   * queue 만들어서 posts를 타임스탬프 순서대로 넣으면 됨
+   */
 
   ///def rankLangs(langs: List[String], rdd: RDD[WikipediaArticle]): List[(String, Int)] = ???
 
@@ -106,6 +114,11 @@ object WikipediaRanking {
   ///def rankLangsReduceByKey(langs: List[String], rdd: RDD[WikipediaArticle]): List[(String, Int)] = ???
 
   def main(args: Array[String]) {
+
+    val query1 : List[(String, Int)] = timed("Query 1 : find top 3 posts", findTop3())
+
+    //--------------------------------------------------------------------------------------
+
     /*
     /* Languages ranked according to (1) */
     val langsRanked: List[(String, Int)] = timed("Part 1: naive ranking", rankLangs(langs, wikiRdd))
