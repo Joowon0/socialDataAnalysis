@@ -77,6 +77,10 @@ object WikipediaRanking {
    *   Note: this operation is long-running. It can potentially run for
    *   several seconds.
    */
+  def findTopThree(commentsRDD : RDD[CommentInfo], postsRDD : RDD[PostInfo]) : List[(String, Int)] = {
+    
+  }
+
   ///def rankLangs(langs: List[String], rdd: RDD[WikipediaArticle]): List[(String, Int)] = ???
 
   /* Compute an inverted index of the set of articles, mapping each language
