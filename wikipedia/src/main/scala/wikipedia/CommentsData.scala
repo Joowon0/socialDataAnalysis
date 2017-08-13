@@ -9,13 +9,13 @@ import java.util.Date
   * Created by syndr on 2017-08-09.
   */
 object CommentsData {
-  private[twitter] def filePath = {
+  private[wikipedia] def filePath = {
     val resource = this.getClass.getClassLoader.getResource("data/comments.dat")
     if (resource == null) sys.error("comments.dat == null")
     new File(resource.toURI).getPath
   }
 
-  private[twitter] def parse(line: String): CommentInfo = {
+  private[wikipedia] def parse(line: String): CommentInfo = {
     val dat = line.split("|").toList
     val ts = dat(0).split("+").toList.head.split("T")
     //val date : String = ts(0)
