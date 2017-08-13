@@ -82,7 +82,7 @@ object WikipediaRanking {
   val threePosts : ThreePosts
 
   def findTop3(commentsRDD : RDD[CommentInfo], postsRDD : RDD[PostInfo]) : List[Post] = {
-    threePosts.getTopPosts()
+    //threePosts.getTopPosts()
   }
   /*
    * 쓰레드 돌려서 threePosts 변수에 타임스탬프 순으로 insert해줌. 중간에 findTop3하면 현재 시점에서의 top3 포스트가 나옴
