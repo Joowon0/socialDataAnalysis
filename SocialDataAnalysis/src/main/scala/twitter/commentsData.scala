@@ -9,6 +9,10 @@ import java.util.Date
   * Created by syndr on 2017-08-09.
   */
 object CommentsData {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6d633b2a16c594b8078d0f140d8ad25b586f18af
   private[twitter] def filePath = {
     val resource = this.getClass.getClassLoader.getResource("twitter/comments.dat")
     if (resource == null) sys.error("comments.dat == null")

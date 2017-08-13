@@ -6,9 +6,16 @@ import java.text.{DateFormat, SimpleDateFormat}
 import java.util.Date
 
 /**
+<<<<<<< HEAD
   * Created by syndr on 2017-08-09.
   */
 object PostsData {
+=======
+  * Created by syndr on 2017-07-19.
+  */
+object PostsData {
+
+>>>>>>> 6d633b2a16c594b8078d0f140d8ad25b586f18af
   private[twitter] def filePath = {
     val resource = this.getClass.getClassLoader.getResource("twitter/posts.dat")
     if (resource == null) sys.error("posts.dat == null")

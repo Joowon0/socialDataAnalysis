@@ -6,23 +6,17 @@ import java.text.{DateFormat, SimpleDateFormat}
 import java.util.Date
 
 /**
-<<<<<<< HEAD
-  * Created by syndr on 2017-08-09.
+  * Created by syndr on 2017-08-08.
   */
-object LikesData {
-=======
-  * Created by syndr on 2017-07-19.
-  */
-object LikesData {
 
->>>>>>> 6d633b2a16c594b8078d0f140d8ad25b586f18af
+package object FriendshipsData {
   private[twitter] def filePath = {
-    val resource = this.getClass.getClassLoader.getResource("twitter/likes.dat")
-    if (resource == null) sys.error("likes.dat == null")
+    val resource = this.getClass.getClassLoader.getResource("twitter/friendships.dat")
+    if (resource == null) sys.error("friendships.dat == null")
     new File(resource.toURI).getPath
   }
 
-  private[twitter] def parse(line: String): LikeInfo = {
+  private[twitter] def parse(line: String): FriendshipInfo = {
     val dat = line.split("|").toList
     val ts = dat(0).split("+").toList.head.split("T")
     //val date : String = ts(0)
@@ -31,9 +25,9 @@ object LikesData {
     val df : DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSX")
     val date : Date = df.parse(dat(0))
     val timestamp : Timestamp = new Timestamp(date.getTime())
-    val user_id : Long = dat(1).toLong
-    val comment_id : Long = dat(2).toLong
+    val user_id_1 : Long = dat(1).toLong
+    val user_id_2 : Long = dat(2).toLong
 
-    LikeInfo(timestamp, user_id, comment_id);
+    FriendshipInfo(timestamp, user_id_1, user_id_2);
   }
 }

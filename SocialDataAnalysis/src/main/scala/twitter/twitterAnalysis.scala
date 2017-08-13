@@ -6,6 +6,8 @@ import realTime.Post
 import realTime.Signal
 import realTime.Query1
 
+import org.apache.spark.SparkConf
+
 /**
   * Created by syndr on 2017-07-19.
   */
@@ -38,6 +40,11 @@ case class LikeInfo(timestamp : Timestamp, user_id : Long, comment_id : Long) {
    */
 }
 
+<<<<<<< HEAD
+=======
+//case class dd() {}
+
+>>>>>>> 6d633b2a16c594b8078d0f140d8ad25b586f18af
 object twitterAnalysis {
   /*def main(args: Array[String]) {
     println("Empty Main")
@@ -45,10 +52,17 @@ object twitterAnalysis {
 
   val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis");
   val sc: SparkContext = new SparkContext(conf);
+<<<<<<< HEAD
   val commentsRDD: RDD[CommentInfo] = sc.textFile(CommentsData.filePath).map(CommentsData.parse);
   val FriendshipsRDD : RDD[FriendshipInfo] = sc.textFile(FriendshipsData.filePath).map(FriendshipsData.parse);
   val LikesRDD : RDD[LikeInfo] = sc.textFile(LikesData.filePath).map(LikesData.parse);
   val PostsRDD : RDD[PostInfo] = sc.textFile(PostsData.filePath).map(PostsData.parse);
+=======
+  val commentsRDD: RDD[CommentInfo] = sc.textFile(CommentsData.filePath).map(CommentsData.parse)
+  val FriendshipsRDD : RDD[FriendshipInfo] = sc.textFile(FriendshipsData.filePath).map(FriendshipsData.parse)
+  val LikesRDD : RDD[LikeInfo] = sc.textFile(LikesData.filePath).map(LikesData.parse)
+  val PostsRDD : RDD[PostInfo] = sc.textFile(PostsData.filePath).map(PostsData.parse)
+>>>>>>> 6d633b2a16c594b8078d0f140d8ad25b586f18af
 
   def topThreeComments(): List[(Long, String)] = {
     /*
