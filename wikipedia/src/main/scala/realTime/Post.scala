@@ -1,35 +1,41 @@
 package realTime
 
+/**
+  * Class for handling posts and comments
+  */
+
 import scala.collection.parallel.mutable.ParHashSet
+import java.util.Date
 
-
-// would be more efficient to make a class with 3 posts with order
 trait Writing {
-  val totalScore : Int
+  def getScore() : Int
 }
 
-case class Post (timestamp: Timestamp) extends Writing {
-  val totalScore = Var(0)
-  def update() : Unit =  //problem here
-    totalScore() = comments map (_.totalScore) sum
+case class Post(timestamp: Timestamp) extends Writing {
+  val totalScore: Var[Int] = Var(0)
+  def getScore(): Int = totalScore()
+  val comments : ParHashSet[Comment] = ParHashSet()
 
+  def update(): Unit =
+    totalScore() = comments map (_.getScore()) sum
   def addComment(comment: Comment) : Unit =
     comments + comment
-
-  // a set of connected comments
-  val comments : ParHashSet[Comment] = ParHashSet()
 }
 
-case class Comment ( commentID: Long, timestamp: Timestamp) extends Writing {
-  val totalScore = timestamp.score // this might be changed into Var()
+case class Comment (commentID: Long, timestamp: Timestamp) extends Writing {
+  def getScore() = timestamp.score()
 }
 
 case object Empty extends Writing {
-  val totalScore = 0
+  def getScore(): Int = 0
 }
 
-
-class Timestamp {
-  val timestamp = ???
+// use method Date(int year, int month, int date) for new Date
+class Timestamp(timestamp: Date) {
   val score = Var(10)
+
+  def decrease() : Unit = {
+    val temp = score()
+    score() = temp - 1
+  }
 }
