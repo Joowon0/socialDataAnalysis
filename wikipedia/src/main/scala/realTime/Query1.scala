@@ -4,7 +4,7 @@ package realTime
   * Classes for handling Query1
   */
 
-import scala.collection.parallel.mutable.ParHashMap
+import scala.collection.parallel.mutable._
 
 class ThreePosts {
   val post1 : Var[Writing] = Var(Empty)
@@ -48,7 +48,12 @@ class ThreePosts {
 }
 
 object Query1 {
+  // a value that contains recent top3
   val TOP3 = new ThreePosts
+  // all of timestamps
+  val daysTimestamp : ParHashSet[Timestamp] = ParHashSet()
+  // a set of all post
+  val posts : ParHashSet[Post] = ParHashSet()
 
   // given a comment ID, able to find corresponding posts
   val connectedPost : ParHashMap[Long, Post] = ParHashMap()
@@ -58,12 +63,5 @@ object Query1 {
   // This part should be changed into parallel
   def findTop3(): List[Post] = TOP3.getTopPosts()
   def findTop3(posts: ThreePosts): List[Post] = posts.getTopPosts()
-<<<<<<< HEAD
 
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/newBranch
->>>>>>> e01c6f4b21259c2386f0a161da4513f01b4a814a
 }
