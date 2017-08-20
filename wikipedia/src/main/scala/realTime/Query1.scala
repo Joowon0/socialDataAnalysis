@@ -58,5 +58,12 @@ object Query1 {
   // This part should be changed into parallel
   def findTop3(): List[Post] = TOP3.getTopPosts()
   def findTop3(posts: ThreePosts): List[Post] = posts.getTopPosts()
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/newBranch
+>>>>>>> e01c6f4b21259c2386f0a161da4513f01b4a814a
 }
