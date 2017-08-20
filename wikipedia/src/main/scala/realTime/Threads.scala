@@ -50,7 +50,7 @@ object Threads {
     Query1.daysTimestamp map (_.decrease())
 
     // these numbers should be changed into variables
-    Query1.daysTimestamp += new Timestamp(new Date(2017, 3, 1))
+    Query1.daysTimestamp += new Timestamp(new Date(2010, 3, 1))
 
   }
 }
