@@ -7,7 +7,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import realTime.{Post, Query1, Queue, ThreePosts}
+import realTime._
 
 /*case class WikipediaArticle(title: String, text: String) {
   /**
@@ -64,6 +64,18 @@ object WikipediaRanking {
   val FriendshipsRDD : RDD[FriendshipInfo] = sc.textFile(FriendshipsData.filePath).map(FriendshipsData.parse);
   val LikesRDD : RDD[LikeInfo] = sc.textFile(LikesData.filePath).map(LikesData.parse);
   val PostsRDD : RDD[PostInfo] = sc.textFile(PostsData.filePath).map(PostsData.parse);
+
+  PostsRDD map (p => Query1.posts + new Post(p.post_id, ???))
+  commentsRDD map {c =>
+    val postOrigin : Post =
+      if (c.comment_replied == 0)
+        (Query1.posts find (p => p.PostID == c.post_commented)).get
+      else
+        Query1.connectedPost(c.comment_replied)
+
+    postOrigin.addComment(new Comment(c.comment_id, ???))
+    Queue.newPosts += postOrigin
+  }
 
   /** Returns the number of articles on which the language `lang` occurs.
    *  Hint1: consider using method `aggregate` on RDD[T].

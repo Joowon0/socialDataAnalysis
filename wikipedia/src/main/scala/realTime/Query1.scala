@@ -34,14 +34,14 @@ class ThreePosts {
   // get top 3 posts that do not have score 0
   def getTopPosts() : List[Post] =
     post1() match {
-      case Empty => List()
-      case Post(_)  =>
+      case Empty      => List()
+      case Post(_,_)  =>
         post2() match {
-          case Empty   => List(post1().asInstanceOf)
-          case Post(_) =>
+          case Empty     => List(post1().asInstanceOf)
+          case Post(_,_) =>
             post3() match {
-              case Empty   => List(post2().asInstanceOf, post1().asInstanceOf)
-              case Post(_) => List(post3().asInstanceOf, post2().asInstanceOf, post1().asInstanceOf)
+              case Empty     => List(post2().asInstanceOf, post1().asInstanceOf)
+              case Post(_,_) => List(post3().asInstanceOf, post2().asInstanceOf, post1().asInstanceOf)
             }
         }
     }
@@ -56,7 +56,7 @@ object Query1 {
   val posts : ParHashSet[Post] = ParHashSet()
 
   // given a comment ID, able to find corresponding posts
-  val connectedPost : ParHashMap[Long, Post] = ParHashMap()
+  val connectedPost : ParHashMap[Long, Post] = ParHashMap() // withDefault (_ => Empty)
   def insertConnection(commentID: Long, post: Post) : Unit =
     connectedPost + (commentID, post)
 

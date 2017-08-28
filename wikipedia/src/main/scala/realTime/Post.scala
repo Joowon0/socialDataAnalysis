@@ -11,7 +11,7 @@ trait Writing {
   def getScore() : Int
 }
 
-case class Post(timestamp: Timestamp) extends Writing {
+case class Post(PostID: Long, timestamp: Timestamp) extends Writing {
   val totalScore: Var[Int] = Var(0)
   def getScore(): Int = totalScore()
   val comments : ParHashSet[Comment] = ParHashSet()
@@ -39,7 +39,12 @@ class Timestamp(timestamp: Date) {
     score() = temp - 1
   }
 
+<<<<<<< HEAD
+  def isPast(today : Date): Boolean =
+    timestamp.compareTo(today) == -1
+=======
   def isPast(today : Date): Boolean = {
     timestamp.compareTo(today) == -1
   }
+>>>>>>> 3a3c510568f24b0fdc9048996bbd4b1ffb738bc2
 }
