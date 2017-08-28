@@ -1,12 +1,13 @@
 package wikipedia
 
 import java.sql.Timestamp
+import java.util.Date
 
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import realTime.{Post, Query1, ThreePosts}
+import realTime.{Post, Query1, Queue, ThreePosts}
 
 /*case class WikipediaArticle(title: String, text: String) {
   /**
@@ -78,22 +79,19 @@ object WikipediaRanking {
    *   Note: this operation is long-running. It can potentially run for
    *   several seconds.
    */
-<<<<<<< HEAD
 
-  val threePosts : ThreePosts
+  //val threePosts : ThreePosts
 
-  def findTop3(commentsRDD : RDD[CommentInfo], postsRDD : RDD[PostInfo]) : List[Post] = {
+  /*def findTop3(commentsRDD : RDD[CommentInfo], postsRDD : RDD[PostInfo]) : List[Post] = {
     //threePosts.getTopPosts()
-  }
+  }*/
   /*
    * 쓰레드 돌려서 threePosts 변수에 타임스탬프 순으로 insert해줌. 중간에 findTop3하면 현재 시점에서의 top3 포스트가 나옴
    * queue 만들어서 posts를 타임스탬프 순서대로 넣으면 됨
    */
-=======
-  def findTop3(commentRDD: RDD[CommentInfo], postsRDD: RDD[PostInfo]): List[(String, Int)] = {
 
-  }
->>>>>>> origin/newBranch
+  def findTop3(commentRDD: RDD[CommentInfo], postsRDD: RDD[PostInfo]): List[(String, Int)] = ???
+
 
   ///def rankLangs(langs: List[String], rdd: RDD[WikipediaArticle]): List[(String, Int)] = ???
 
@@ -119,10 +117,34 @@ object WikipediaRanking {
    */
   ///def rankLangsReduceByKey(langs: List[String], rdd: RDD[WikipediaArticle]): List[(String, Int)] = ???
 
+  /*def postIsPast(post : Post): Unit = {
+    post.timestamp.
+  }*/
+
   def main(args: Array[String]) {
 
-    val query1 : List[(String, Int)] = timed("Query 1 : find top 3 posts", findTop3())
+    //val query1 : List[(String, Int)] = timed("Query 1 : find top 3 posts", findTop3())
+    var currentDate = new Date(2010,3,1)
 
+    while(true) {
+      print("현재 날짜 : ", currentDate.toString)
+      var exec = true
+      while (exec) {
+        exec = false
+        if (Queue.newPosts.head.timestamp.isPast(currentDate)) {
+          exec = true
+          //Queue.newPosts.head 로 연산하고 tail을 Queue.newPosts = Queue.newPosts.tail 해주면됨
+        }
+
+        if (Queue.newComment.head.timestamp.isPast(currentDate)) {
+          exec = true
+          //Queue.newComment.head 로 연산하고 tail을 Queue.newComment = Queue.newComment.tail 해주면됨
+        }
+      }
+      currentDate = new Date(currentDate.getTime() + 1000*60*60*24) // 하루 지남
+    }
+
+    //Queue.newPosts()
     //--------------------------------------------------------------------------------------
 
     /*

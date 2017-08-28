@@ -38,4 +38,8 @@ class Timestamp(timestamp: Date) {
     val temp = score()
     score() = temp - 1
   }
+
+  def isPast(today : Date): Boolean = {
+    if(timestamp.compareTo(today) == -1)
+  }
 }
