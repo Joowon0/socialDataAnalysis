@@ -140,6 +140,7 @@ object WikipediaRanking {
           exec = true
           //Queue.newComment.head 로 연산하고 tail을 Queue.newComment = Queue.newComment.tail 해주면됨
         }*/
+        print("연산 한번 해쪙")
       }
       currentDate = new Date(currentDate.getTime() + 1000*60*60*24) // 하루 지남
     }
