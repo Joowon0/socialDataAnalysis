@@ -136,10 +136,10 @@ object WikipediaRanking {
           //Queue.newPosts.head 로 연산하고 tail을 Queue.newPosts = Queue.newPosts.tail 해주면됨
         }
 
-        if (Queue.newComment.head.timestamp.isPast(currentDate)) {
+        /*if (Queue.newComment.head.timestamp.isPast(currentDate)) {
           exec = true
           //Queue.newComment.head 로 연산하고 tail을 Queue.newComment = Queue.newComment.tail 해주면됨
-        }
+        }*/
       }
       currentDate = new Date(currentDate.getTime() + 1000*60*60*24) // 하루 지남
     }
