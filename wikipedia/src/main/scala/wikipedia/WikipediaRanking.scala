@@ -138,7 +138,7 @@ object WikipediaRanking {
     //val query1 : List[(String, Int)] = timed("Query 1 : find top 3 posts", findTop3())
     var currentDate = new Date(2010,3,1)
 
-    while(true) {
+    while(true) 
       print("현재 날짜 : ", currentDate.toString)
       var exec = true
       while (exec) {
@@ -178,9 +178,9 @@ object WikipediaRanking {
     sc.stop()*/
 
     /* Query 1 */
-    //val langsRanked: List[(String, Int)] = timed("Part 1: naive ranking", rankLangs(langs, wikiRdd))
+      //val langsRanked: List[(String, Int)] = timed("Part 1: naive ranking", rankLangs(langs, wikiRdd))
 
-    /* An inverted index mapping languages to wikipedia pages on which they appear */
+      /* An inverted index mapping languages to wikipedia pages on which they appear */
     //def index: RDD[(String, Iterable[WikipediaArticle])] = makeIndex(langs, wikiRdd)
 
     /* Languages ranked according to (2), using the inverted index */
