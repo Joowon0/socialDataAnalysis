@@ -7,7 +7,7 @@ object Threads {
   val threshold = 100
 
   /** posts that should be done in real-time **/
-  def postRealTime(getToWork: Int): List[Post] = {
+  def postRealTime(getToWork: Int): Unit = {
     // the number of posts in newPosts
     val newPostsNum = Queue.newPosts.count(_ => true)
     // number of works we need to do
@@ -30,17 +30,13 @@ object Threads {
         i = i - 1
       }
 
-      threePosts.getTopPosts()
+      threePosts.getTopPosts() map (Query1.TOP3 insert (_))
     }
     // dividing into parallel
     else {
+      /** Not sure if this part works in parallel*/
       val (a1, a2) = parallel(postRealTime(loadNum / 2), postRealTime(loadNum - loadNum / 2))
-      val threePosts = new ThreePosts
 
-      a1 map (threePosts.insert(_))
-      a2 map (threePosts.insert(_))
-
-      threePosts.getTopPosts()
     }
   }
 
