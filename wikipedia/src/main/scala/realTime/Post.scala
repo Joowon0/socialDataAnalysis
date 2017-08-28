@@ -40,6 +40,6 @@ class Timestamp(timestamp: Date) {
   }
 
   def isPast(today : Date): Boolean = {
-    if(timestamp.compareTo(today) == -1)
+    timestamp.compareTo(today) == -1
   }
 }
