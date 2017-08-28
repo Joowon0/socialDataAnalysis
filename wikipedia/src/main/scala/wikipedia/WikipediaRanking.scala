@@ -47,9 +47,9 @@ case class LikeInfo(timestamp : Timestamp, user_id : Long, comment_id : Long) {
 
 object WikipediaRanking {
 
-  val langs = List(
+  /*val langs = List(
     "JavaScript", "Java", "PHP", "Python", "C#", "C++", "Ruby", "CSS",
-    "Objective-C", "Perl", "Scala", "Haskell", "MATLAB", "Clojure", "Groovy")
+    "Objective-C", "Perl", "Scala", "Haskell", "MATLAB", "Clojure", "Groovy")*/
 
 
   /*val conf: SparkConf = ???
