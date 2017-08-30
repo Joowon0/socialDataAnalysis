@@ -61,13 +61,18 @@ object WikipediaRanking {
 
   //val wikiRdd: RDD[WikipediaArticle] = ???
   val commentsRDD: RDD[CommentInfo] = sc.textFile(CommentsData.filePath).map(CommentsData.parse);
-  val FriendshipsRDD : RDD[FriendshipInfo] = sc.textFile(FriendshipsData.filePath).map(FriendshipsData.parse);
-  val LikesRDD : RDD[LikeInfo] = sc.textFile(LikesData.filePath).map(LikesData.parse);
-  val PostsRDD : RDD[PostInfo] = sc.textFile(PostsData.filePath).map(PostsData.parse);
+  val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile(FriendshipsData.filePath).map(FriendshipsData.parse);
+  val LikesRDD: RDD[LikeInfo] = sc.textFile(LikesData.filePath).map(LikesData.parse);
+  val PostsRDD: RDD[PostInfo] = sc.textFile(PostsData.filePath).map(PostsData.parse);
+
+  commentsRDD.sortBy(_.timestamp) // 코멘트 타임스탬프로 정렬
+  PostsRDD.sortBy(_.timestamp) // 포스트 타임스탬프로 정렬
+  var commentList: List[CommentInfo] = commentsRDD.collect().toList // 코멘트 리스트
+  var postList: List[PostInfo] = PostsRDD.collect().toList // 포스트 리스트
 
   PostsRDD map (p => Query1.posts + new Post(p.post_id, ???))
-  commentsRDD map {c =>
-    val postOrigin : Post =
+  commentsRDD map { c =>
+    val postOrigin: Post =
       if (c.comment_replied == 0)
         (Query1.posts find (p => p.PostID == c.post_commented)).get
       else
@@ -78,9 +83,9 @@ object WikipediaRanking {
   }
 
   /** Returns the number of articles on which the language `lang` occurs.
-   *  Hint1: consider using method `aggregate` on RDD[T].
-   *  Hint2: consider using method `mentionsLanguage` on `WikipediaArticle`
-   */
+    * Hint1: consider using method `aggregate` on RDD[T].
+    * Hint2: consider using method `mentionsLanguage` on `WikipediaArticle`
+    */
   ///def occurrencesOfLang(lang: String, rdd: RDD[WikipediaArticle]): Int = ???
 
   /* (1) Use `occurrencesOfLang` to compute the ranking of the languages
@@ -136,26 +141,27 @@ object WikipediaRanking {
   def main(args: Array[String]) {
 
     //val query1 : List[(String, Int)] = timed("Query 1 : find top 3 posts", findTop3())
-    var currentDate = new Date(2010,3,1)
-
-    while(true) 
+    var currentDate = new Date(2010, 3, 1)
+    //commentsRDD.to
+    while (true)
       print("현재 날짜 : ", currentDate.toString)
-      var exec = true
-      while (exec) {
-        exec = false
-        if (Queue.newPosts.head.timestamp.isPast(currentDate)) {
-          exec = true
-          //Queue.newPosts.head 로 연산하고 tail을 Queue.newPosts = Queue.newPosts.tail 해주면됨
-        }
+    var exec = true
+    while (exec) {
+      exec = false
+      if (postList.head.timestamp.before(currentDate)) {
+        exec = true
+        //Queue.newPosts.head 로 연산하고 tail을 Queue.newPosts = Queue.newPosts.tail 해주면됨
+        //postList.head 샬라샬라
+        postList = postList.tail
+      }
 
-        /*if (Queue.newComment.head.timestamp.isPast(currentDate)) {
+      /*if (Queue.newComment.head.timestamp.isPast(currentDate)) {
           exec = true
           //Queue.newComment.head 로 연산하고 tail을 Queue.newComment = Queue.newComment.tail 해주면됨
         }*/
-        print("연산 한번 해쪙")
-      }
-      currentDate = new Date(currentDate.getTime() + 1000*60*60*24) // 하루 지남
+      print("연산 한번 해쪙")
     }
+    currentDate = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24) // 하루 지남
 
     //Queue.newPosts()
     //--------------------------------------------------------------------------------------
@@ -178,9 +184,9 @@ object WikipediaRanking {
     sc.stop()*/
 
     /* Query 1 */
-      //val langsRanked: List[(String, Int)] = timed("Part 1: naive ranking", rankLangs(langs, wikiRdd))
+    //val langsRanked: List[(String, Int)] = timed("Part 1: naive ranking", rankLangs(langs, wikiRdd))
 
-      /* An inverted index mapping languages to wikipedia pages on which they appear */
+    /* An inverted index mapping languages to wikipedia pages on which they appear */
     //def index: RDD[(String, Iterable[WikipediaArticle])] = makeIndex(langs, wikiRdd)
 
     /* Languages ranked according to (2), using the inverted index */
@@ -191,7 +197,7 @@ object WikipediaRanking {
 
     /* Output the speed of each ranking */
     println(timing)
-
+    sc.stop()
   }
 
   val timing = new StringBuffer
