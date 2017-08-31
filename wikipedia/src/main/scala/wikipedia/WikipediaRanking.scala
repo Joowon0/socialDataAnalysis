@@ -1,6 +1,7 @@
 package wikipedia
 
 import java.sql.Timestamp
+import java.text.{DateFormat, SimpleDateFormat}
 import java.util.Date
 
 import org.apache.spark.SparkConf
@@ -139,17 +140,22 @@ object WikipediaRanking {
   }*/
 
   def main(args: Array[String]) {
-    println("HELP")
+    //println("HELP")
 
     //val query1 : List[(String, Int)] = timed("Query 1 : find top 3 posts", findTop3())
-    var currentDate = new Date(2010, 3, 1)
+
+    var df : DateFormat = new SimpleDateFormat("yyyy-MM-DD'T'HH:mm:ss.SSSSSX")
+    var date : Date = df.parse("2010-05-01T12:00:00.000+0900")
+    //2010-03-01T12:00:00.000
+    var currentDate : Timestamp = new Timestamp(date.getTime())
     //commentsRDD.to
+    println("현재 날짜 : " + currentDate.toString)
     while (true) {
-      println("현재 날짜 : " + currentDate.toString)
+      //println("현재 날짜 : " + currentDate.toString)
       var exec = true
       while (exec) {
         exec = false
-        if (postList.head.timestamp.before(currentDate)) {
+        if (postList.length != 0 && postList.head.timestamp.before(currentDate)) {
           exec = true
           //Queue.newPosts.head 로 연산하고 tail을 Queue.newPosts = Queue.newPosts.tail 해주면됨
           //postList.head 샬라샬라
@@ -160,9 +166,10 @@ object WikipediaRanking {
           exec = true
           //Queue.newComment.head 로 연산하고 tail을 Queue.newComment = Queue.newComment.tail 해주면됨
         }*/
-        print("연산 한번 해쪙 // ")
+        //print(".")
       }
-      currentDate = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24) // 하루 지남
+      //print("-----\n")
+      //currentDate = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24) // 하루 지남
     }
     //Queue.newPosts()
     //--------------------------------------------------------------------------------------

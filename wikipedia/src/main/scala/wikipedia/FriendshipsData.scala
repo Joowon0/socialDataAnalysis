@@ -25,6 +25,7 @@ object FriendshipsData {
     val timestamp : Timestamp = new Timestamp(date.getTime())
     val user_id_1 : Long = dat(1).toLong
     val user_id_2 : Long = dat(2).toLong
+    //println("timestamp : " + timestamp)
     /*
     println("-------------------------")
     println("timestamp : " + timestamp)
