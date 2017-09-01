@@ -145,13 +145,15 @@ object WikipediaRanking {
     //val query1 : List[(String, Int)] = timed("Query 1 : find top 3 posts", findTop3())
 
     var df : DateFormat = new SimpleDateFormat("yyyy-MM-DD'T'HH:mm:ss.SSSSSX")
-    var date : Date = df.parse("2010-05-01T12:00:00.000+0900")
+    var date : Date = df.parse("2010-12-01T12:00:00.000+0900")
+
     //2010-03-01T12:00:00.000
     var currentDate : Timestamp = new Timestamp(date.getTime())
+    currentDate = new Timestamp(new Date(currentDate.getTime() + 1000 * 60 * 60 * 24 * 50 + 296 - 25033000).getTime())
     //commentsRDD.to
     println("현재 날짜 : " + currentDate.toString)
     while (true) {
-      //println("현재 날짜 : " + currentDate.toString)
+      println("현재 날짜 : " + currentDate.toString)
       var exec = true
       while (exec) {
         exec = false
@@ -166,10 +168,10 @@ object WikipediaRanking {
           exec = true
           //Queue.newComment.head 로 연산하고 tail을 Queue.newComment = Queue.newComment.tail 해주면됨
         }*/
-        //print(".")
+        print(".")
       }
-      //print("-----\n")
-      //currentDate = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24) // 하루 지남
+      print("\n")
+      currentDate = new Timestamp(new Date(currentDate.getTime() + 1000 * 60 * 60 * 24).getTime()) // 하루 지남
     }
     //Queue.newPosts()
     //--------------------------------------------------------------------------------------

@@ -46,7 +46,7 @@ object CommentsData {
     println("user : " + user)
     println("comment_replied : " + comment_replied)
     println("post_commented : " + post_commented)
-    */
+*/
     CommentInfo(timestamp, comment_id, user_id, comment, user, comment_replied, post_commented)
   }
 }
