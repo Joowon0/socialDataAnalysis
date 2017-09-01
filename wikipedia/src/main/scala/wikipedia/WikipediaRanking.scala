@@ -79,7 +79,7 @@ object WikipediaRanking {
       else
         Query1.connectedPost(c.comment_replied)
 
-    postOrigin.addComment(new Comment(c.comment_id, ???))
+    postOrigin.addComment(new Comment(c.comment_id, ???, ???))
     Queue.newPosts += postOrigin
   }
 

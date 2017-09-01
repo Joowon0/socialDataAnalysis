@@ -57,11 +57,11 @@ case class Comment (commentID: Long, date_timestamp: Timestamp, sec_timestamp: D
       // merge origin set and friends set of base
       def mergeFriend(base : Long, origin : ParSet[Long]) : ParSet[Long] = {
         val friends : ParSet[Long] = commuGraph(base).toSet[Long]
-        val getmore = friends flatMap {id =>
+        val getmore : ParSet[Long] = friends flatMap {id =>
           if (id > base && !friends.contains(id))
             mergeFriend(id, (origin + base))
           else
-            Set()
+            ParSet(base)
         }
         friends ++ getmore
       }
