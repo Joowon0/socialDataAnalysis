@@ -17,7 +17,7 @@ object PostsData {
 
   private[wikipedia] def parse(line: String): PostInfo = {
     val dat : Array[String]= line.split("\\|")
-    val ts = dat(0).split("\\+").toList.head.split("T")
+    //val ts = dat(0).split("\\+").toList.head.split("T")
 
     val df : DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSX")
     val date : Date = df.parse(dat(0))
