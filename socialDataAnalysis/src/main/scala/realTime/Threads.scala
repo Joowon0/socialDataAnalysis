@@ -1,7 +1,6 @@
 package realTime
 
-import common._
-import java.util.Date
+import libFromCoursera.parallel
 
 object Threads {
   val threshold = 100
@@ -9,7 +8,7 @@ object Threads {
   /** posts that should be done in real-time **/
   def postRealTime(getToWork: Int): Unit = {
     // the number of posts in newPosts
-    val newPostsNum = Queue.newPosts.count(_ => true)
+    val newPostsNum = Query1.postsUpdate.count(_ => true)
     // number of works we need to do
     val loadNum =
       if (getToWork == 0) newPostsNum
@@ -23,7 +22,7 @@ object Threads {
       var i = loadNum
 
       while (i > 0) {
-        val postHandle = Queue.newPosts.dequeue()
+        val postHandle = Query1.postsUpdate.dequeue()
 
         Query1.posts += postHandle
 
@@ -38,15 +37,5 @@ object Threads {
       val (a1, a2) = parallel(postRealTime(loadNum / 2), postRealTime(loadNum - loadNum / 2))
 
     }
-  }
-
-
-  /** called when a day pass by **/
-  def calculate(): Unit = { // not sure if this is it
-    Query1.daysTimestamp map (_.decrease())
-
-    // these numbers should be changed into variables
-    Query1.daysTimestamp += new Timestamp(new Date(2010, 3, 1))
-
   }
 }

@@ -4,6 +4,9 @@ package realTime
   * Classes for handling Query1
   */
 
+import libFromCoursera.Var
+
+import scala.collection.mutable
 import scala.collection.parallel.mutable._
 
 class ThreePosts {
@@ -54,6 +57,8 @@ object Query1 {
   val daysTimestamp : ParHashSet[Timestamp] = ParHashSet()
   // a set of all post
   val posts : ParHashSet[Post] = ParHashSet()
+  // posts that needs update
+  val postsUpdate   = new mutable.Queue[Post]
 
   // given a comment ID, able to find corresponding posts
   val connectedPost : ParHashMap[Long, Post] = ParHashMap() // withDefault (_ => Empty)
@@ -63,5 +68,4 @@ object Query1 {
   // This part should be changed into parallel
   def findTop3(): List[Post] = TOP3.getTopPosts()
   def findTop3(posts: ThreePosts): List[Post] = posts.getTopPosts()
-
 }

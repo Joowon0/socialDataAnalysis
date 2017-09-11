@@ -1,4 +1,4 @@
-package realTime
+package libFromCoursera
 
 /**
   * Created by joowon on 17. 7. 19.

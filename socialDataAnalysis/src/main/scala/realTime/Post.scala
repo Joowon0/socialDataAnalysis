@@ -7,6 +7,8 @@ package realTime
 import scala.collection.parallel.mutable.{ParHashMap, ParHashSet}
 import java.util.Date
 
+import libFromCoursera.Var
+
 import scala.collection.parallel.immutable.ParSet
 
 trait Writing {
