@@ -39,8 +39,6 @@ object WikipediaRanking {
   var commentList: List[CommentInfo] = commentsRDD.collect().toList // 코멘트 리스트
   var postList: List[PostInfo] = PostsRDD.collect().toList // 포스트 리스트
 
-
-
   def processPost (currentDate : Timestamp, dayStamp : realTime.Timestamp) : Unit = {
     var exec = true
     while (exec) {
@@ -120,12 +118,14 @@ object WikipediaRanking {
       //println("all posts  : \n" + printTemp2)
 
       processComment(currentDate, Query1.daysTimestamp.head)
-/*
-      println(Query1.posts)
+
+      //println(Query1.posts)
 
       /** calculate */
-      Threads.postRealTime(100)
-*/
+      Threads.postRealTime(0)
+      val printTemp3: String = Query1.TOP3.getTopPosts() map {p => p.PostID} mkString (" ")
+      println("TOP3 : " + printTemp3)
+
       println()
 
       /** processes regards to date */
@@ -139,7 +139,7 @@ object WikipediaRanking {
     }
 
     //Query1.TOP3.getTopPosts() map {p => println(p.PostID)}
-    //println("\n")
+    //println()
 
     println(timing)
     sc.stop()

@@ -5,7 +5,7 @@ import libFromCoursera.parallel
 object Threads {
   val threshold = 100
 
-  /** posts that should be done in real-time **/
+  /** post calculation that should be done in real-time **/
   def postRealTime(getToWork: Int): Unit = {
     // the number of posts in newPosts
     val newPostsNum = Query1.postsUpdate.count(_ => true)
@@ -35,7 +35,6 @@ object Threads {
     else {
       /** Not sure if this part works in parallel*/
       val (a1, a2) = parallel(postRealTime(loadNum / 2), postRealTime(loadNum - loadNum / 2))
-
     }
   }
 }
