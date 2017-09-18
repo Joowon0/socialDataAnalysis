@@ -24,7 +24,7 @@ object Threads {
       while (i > 0) {
         val postHandle = Query1.postsUpdate.dequeue()
 
-        Query1.posts += postHandle
+        //Query1.posts += postHandle
 
         i = i - 1
       }

@@ -24,6 +24,11 @@ case class Post(PostID: Long, timestamp: Timestamp) extends Writing {
     totalScore() = (comments map (_.getScore()) sum) + timestamp.score()
   def addComment(comment: Comment) : Unit =
     comments + comment
+
+  override def toString: String =
+    "ID : " + PostID + ", "
+    "TS : " + timestamp.toString + ", "
+    "sc : " + getScore() + "\n"
 }
 
 // date_timestamp  - only records date and scores
@@ -98,4 +103,6 @@ class Timestamp(timestamp: Date) {
   
   def isPast(today : Date): Boolean =
     timestamp.compareTo(today) == -1
+
+  override def toString: String = timestamp.toString + " : " + score() + ", "
 }

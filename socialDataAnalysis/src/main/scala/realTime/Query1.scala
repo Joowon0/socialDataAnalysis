@@ -8,6 +8,7 @@ import libFromCoursera.Var
 
 import scala.collection.mutable
 import scala.collection.parallel.mutable._
+import scala.collection.mutable.MutableList
 
 class ThreePosts {
   val post1 : Var[Writing] = Var(Empty)
@@ -54,9 +55,9 @@ object Query1 {
   // a value that contains recent top3
   val TOP3 = new ThreePosts
   // all of timestamps
-  val daysTimestamp : ParHashSet[Timestamp] = ParHashSet()
+  val daysTimestamp : MutableList[Timestamp] = MutableList()
   // a set of all post
-  val posts : ParHashSet[Post] = ParHashSet()
+  val posts : ParSet[Post] = ParSet()
   // posts that needs update
   val postsUpdate   = new mutable.Queue[Post]
 

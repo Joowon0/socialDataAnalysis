@@ -25,13 +25,14 @@ case class LikeInfo(timestamp : Timestamp, user_id : Long, comment_id : Long) {}
 
 
 object WikipediaRanking {
+  //val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
   val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
   val sc: SparkContext = new SparkContext(conf)
 
-  val commentsRDD: RDD[CommentInfo] = sc.textFile("/home/data/comments.dat").map(CommentsData.parse)
-  val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/data/friendships.dat").map(FriendshipsData.parse)
-  val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/data/likes.dat").map(LikesData.parse)
-  val PostsRDD: RDD[PostInfo] = sc.textFile("/home/data/posts.dat").map(PostsData.parse)
+  val commentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments.dat").map(CommentsData.parse)
+  val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships.dat").map(FriendshipsData.parse)
+  val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes.dat").map(LikesData.parse)
+  val PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts.dat").map(PostsData.parse)
 
   //commentsRDD.sortBy(_.timestamp.getNanos) // 코멘트 타임스탬프로 정렬
   //PostsRDD.sortBy(_.timestamp.getNanos) // 포스트 타임스탬프로 정렬
@@ -47,10 +48,13 @@ object WikipediaRanking {
       if (postList.length != 0 && postList.head.timestamp.before(currentDate)) {
         exec = true
 
-        Query1.posts + new Post(postList.head.post_id, dayStamp)
+        //println(postList.head)
+
+        Query1.posts += new Post(postList.head.post_id, dayStamp)
         postList = postList.tail
       }
     }
+    println(Query1.posts)
   }
 
   def processComment (currentDate : Timestamp, dayStamp : realTime.Timestamp) : Unit = {
@@ -69,34 +73,60 @@ object WikipediaRanking {
           else
             Query1.connectedPost(c.comment_replied)
 
+        //println((c, postOrigin))
+
         postOrigin.addComment(new Comment(c.comment_id, dayStamp, c.timestamp))
+        Query1.insertConnection(c.comment_id, postOrigin)
         Query1.postsUpdate += postOrigin
       }
     }
+    println("total comment : " + Query1.postsUpdate)
   }
 
   def main(args: Array[String]) {
     val df : DateFormat = new SimpleDateFormat("yyyy-MM-DD'T'HH:mm:ss.SSSSSX")
     val date : Date = df.parse("2010-01-01T03:00:00.000+0000") // 12시 정오임
 
-    //2010-03-01T12:00:00.000
+    //2010-02-01T12:00:00.000
     var currentDate : Timestamp = new Timestamp(date.getTime()) // java.util.Date
-    Query1.daysTimestamp + new realTime.Timestamp(date)         // realTime.timestamp defined here
 
     var i = 0
-    //while (true) {
-    while (i < 10) {
+    /** Don't know why start at Jan 01 */
+    while(i < 30) {
       i = i + 1
-      //println("현재 날짜 : " + currentDate.toString)
+      val date : Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24)
+      currentDate = new Timestamp(date.getTime())
+    }
+    val date2 : Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 36)
+    currentDate = new Timestamp(date2.getTime())
+    new realTime.Timestamp(date2) +=: Query1.daysTimestamp       // realTime.timestamp defined here
+
+
+    //lazy val printTemp : String = postList map (x => x.toString) mkString  ("\n")
+    //println(printTemp)
+
+    i = 0
+    //while (true) {
+    while (i < 100) {
+      i = i + 1
+      println("현재 날짜    : " + currentDate.toString)
+
+      val printTemp :String = (Query1.daysTimestamp map (x => x.toString)).mkString(" ")
+      println("timestamps : " + printTemp)
 
       /** put data in queue */
-      parallel (processPost(currentDate, Query1.daysTimestamp.head),
-                processComment(currentDate, Query1.daysTimestamp.head))
+      processPost(currentDate, Query1.daysTimestamp.head)
+      //val printTemp2 :String = (Query1.posts map (x => x.toString)).mkString(" ")
+      //println("all posts  : \n" + printTemp2)
+
+      processComment(currentDate, Query1.daysTimestamp.head)
+/*
+      println(Query1.posts)
 
       /** calculate */
       Threads.postRealTime(100)
-
-      //print("\n")
+*/
+      println()
 
       /** processes regards to date */
       val date : Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24)
@@ -105,11 +135,11 @@ object WikipediaRanking {
       // decrease the scores of the old dates
       Query1.daysTimestamp map (_.decrease())
       // add a current date
-      Query1.daysTimestamp += new realTime.Timestamp(date)
+      new realTime.Timestamp(date) +=: Query1.daysTimestamp
     }
 
-    Query1.TOP3.getTopPosts() map {p => println(p.PostID)}
-    println("\n")
+    //Query1.TOP3.getTopPosts() map {p => println(p.PostID)}
+    //println("\n")
 
     println(timing)
     sc.stop()
