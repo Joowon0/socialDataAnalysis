@@ -29,10 +29,10 @@ object WikipediaRanking {
   val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
   val sc: SparkContext = new SparkContext(conf)
 
-  val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments.dat").map(CommentsData.parse)
-  val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships.dat").map(FriendshipsData.parse)
-  val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes.dat").map(LikesData.parse)
-  val PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts.dat").map(PostsData.parse)
+  var CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments.dat").map(CommentsData.parse)
+  var FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships.dat").map(FriendshipsData.parse)
+  var LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes.dat").map(LikesData.parse)
+  var PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts.dat").map(PostsData.parse)
 
 
 
@@ -62,6 +62,11 @@ object WikipediaRanking {
     //while (true) {
     while (i < 100) {
       i = i + 1
+      CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments"+i+".dat").map(CommentsData.parse)
+      FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships"+i+".dat").map(FriendshipsData.parse)
+      LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes"+i+".dat").map(LikesData.parse)
+      PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts"+i+".dat").map(PostsData.parse)
+      
       println("현재 날짜    : " + currentDate.toString)
 
       val printTemp :String = (Query1.daysTimestamp map (x => x.toString)).mkString(" ")
