@@ -29,57 +29,12 @@ object WikipediaRanking {
   val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
   val sc: SparkContext = new SparkContext(conf)
 
-  val commentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments.dat").map(CommentsData.parse)
+  val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments.dat").map(CommentsData.parse)
   val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships.dat").map(FriendshipsData.parse)
   val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes.dat").map(LikesData.parse)
   val PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts.dat").map(PostsData.parse)
 
-  //commentsRDD.sortBy(_.timestamp.getNanos) // 코멘트 타임스탬프로 정렬
-  //PostsRDD.sortBy(_.timestamp.getNanos) // 포스트 타임스탬프로 정렬
-  var commentList: List[CommentInfo] = commentsRDD.collect().toList // 코멘트 리스트
-  var postList: List[PostInfo] = PostsRDD.collect().toList // 포스트 리스트
 
-  def processPost (currentDate : Timestamp, dayStamp : realTime.Timestamp) : Unit = {
-    var exec = true
-    while (exec) {
-      exec = false
-      if (postList.length != 0 && postList.head.timestamp.before(currentDate)) {
-        exec = true
-
-        //println(postList.head)
-
-        Query1.posts += new Post(postList.head.post_id, dayStamp)
-        postList = postList.tail
-      }
-    }
-    println(Query1.posts)
-  }
-
-  def processComment (currentDate : Timestamp, dayStamp : realTime.Timestamp) : Unit = {
-    var exec = true
-    while (exec) {
-      exec = false
-      if (commentList.length != 0 && commentList.head.timestamp.before(currentDate)) {
-        exec = true
-
-        val c = commentList.head
-        commentList = commentList.tail
-
-        val postOrigin: Post =
-          if (c.comment_replied == 0)
-            (Query1.posts find (p => p.PostID == c.post_commented)).get
-          else
-            Query1.connectedPost(c.comment_replied)
-
-        //println((c, postOrigin))
-
-        postOrigin.addComment(new Comment(c.comment_id, dayStamp, c.timestamp))
-        Query1.insertConnection(c.comment_id, postOrigin)
-        Query1.postsUpdate += postOrigin
-      }
-    }
-    println("total comment : " + Query1.postsUpdate)
-  }
 
   def main(args: Array[String]) {
     val df : DateFormat = new SimpleDateFormat("yyyy-MM-DD'T'HH:mm:ss.SSSSSX")
@@ -113,13 +68,35 @@ object WikipediaRanking {
       println("timestamps : " + printTemp)
 
       /** put data in queue */
-      processPost(currentDate, Query1.daysTimestamp.head)
+      //processPost(currentDate, Query1.daysTimestamp.head)
+      /** Query1.posts = PostsRDD*/
+      //PostsRDD.foreach(p => Query1.posts += new Post(p.post_id, Query1.daysTimestamp.head))
       //val printTemp2 :String = (Query1.posts map (x => x.toString)).mkString(" ")
       //println("all posts  : \n" + printTemp2)
 
-      processComment(currentDate, Query1.daysTimestamp.head)
 
-      //println(Query1.posts)
+      val postKeyID = PostsRDD.map (p => (p.post_id, p))
+
+      val withPostID    = CommentsRDD.filter(c => c.post_commented  != 0).map(c => (c.post_commented, c)).groupByKey()
+      val withoutPostID = CommentsRDD.filter(c => c.comment_replied != 0).map(c => (c.comment_replied, c)).groupByKey()
+
+      val postsComments : RDD[(PostInfo, Option[Iterable[CommentInfo]])] =
+        postKeyID.leftOuterJoin(withPostID).values
+
+
+
+
+
+      val comment2Post = CommentsRDD.map(c => (c,
+        if (c.comment_replied == 0)
+          (Query1.posts find (p => p.PostID == c.post_commented)).get
+        else
+          Query1.connectedPost(c.comment_replied)))
+
+      comment2Post.foreach{ case(c, p) => p.addComment(new Comment(c.comment_id, Query1.daysTimestamp.head, c.timestamp)) }
+      comment2Post.foreach{ case(c, p) => Query1.insertConnection(c.comment_id, p) }
+      comment2Post.foreach{ case(c, p) => Query1.postsUpdate += p}
+
 
       /** calculate */
       Threads.postRealTime(0)
@@ -134,7 +111,7 @@ object WikipediaRanking {
       currentDate = new Timestamp(date.getTime())
       // decrease the scores of the old dates
       Query1.daysTimestamp map (_.decrease())
-      // add a current date
+      // add a current datePostsRDD.groupBy(p => p.timestamp)
       new realTime.Timestamp(date) +=: Query1.daysTimestamp
     }
 
