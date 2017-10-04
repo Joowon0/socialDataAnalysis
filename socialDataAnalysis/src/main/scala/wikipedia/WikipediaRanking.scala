@@ -5,7 +5,6 @@ import java.text.{DateFormat, SimpleDateFormat}
 import java.util.Date
 
 import RDDdataTypes.{CommentInfo, FriendshipInfo, LikeInfo, PostInfo}
-import RDDdataflow.{CommentsData, FriendshipsData, LikesData, PostsData}
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -98,9 +97,9 @@ object WikipediaRanking {
       val allPostComment: RDD[(Post, Set[Comment])] = (Posts union newRefinedPostComment).groupByKey().map {
         case (p, set) => (p, set.flatten.toSet)
       }
-      allPostComment.map {
-        case (p, c) => "Post : " + p + "\nComment : " + c
-      }.collect().foreach(println)
+//      allPostComment.map {
+//        case (p, c) => "Post : " + p + "\nComment : " + c
+//      }.collect().foreach(println)
 
       /** function that calculate scores */
       val scores =
@@ -140,7 +139,7 @@ object WikipediaRanking {
       new dataTypes.Timestamp(date) +=: daysTimestamp // add a current datePostsRDD.groupBy(p => p.timestamp)
 
       /** filter posts that is under 0 */
-      val filteredPosts = Posts.filter(p => scores(p) > 0)
+      val filteredPosts = allPostComment.filter(p => scores(p) > 0)
       Posts = filteredPosts
     }
 

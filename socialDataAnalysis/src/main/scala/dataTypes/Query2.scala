@@ -1,3 +1,4 @@
+/*
 package dataTypes
 
 import scala.collection.parallel.mutable.ParHashMap
@@ -20,3 +21,4 @@ object Query2 {
     }
   }
 }
+*/

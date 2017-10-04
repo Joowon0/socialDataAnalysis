@@ -1,4 +1,4 @@
-package RDDdataflow
+package wikipedia
 
 import java.io.File
 import java.sql.Timestamp
