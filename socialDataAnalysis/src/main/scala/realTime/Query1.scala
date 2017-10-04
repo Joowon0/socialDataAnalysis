@@ -62,9 +62,20 @@ object Query1 {
   val postsUpdate   = new mutable.Queue[Post]
 
   // given a comment ID, able to find corresponding posts
+  /*
   val connectedPost : ParHashMap[Long, Post] = ParHashMap() // withDefault (_ => Empty)
   def insertConnection(commentID: Long, post: Post) : Unit =
     connectedPost + (commentID, post)
+*/
+  var connectedPost : Map[Long, Long] = Map() // withDefaultValue (-1)
+  def insertConnection(commentID: Long, postID: Long) : Unit = {
+    connectedPost = connectedPost + (commentID -> postID)
+    //println("commentID : " + commentID + "\tpostID : " + postID)
+    //println(connectedPost.map{ case(c,p) => c + " : " + p} mkString(", "))
+    //println()
+  }
+  //def findPost
+
 
   // This part should be changed into parallel
   def findTop3(): List[Post] = TOP3.getTopPosts()

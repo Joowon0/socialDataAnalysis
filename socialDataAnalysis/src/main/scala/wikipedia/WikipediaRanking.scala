@@ -29,10 +29,10 @@ object WikipediaRanking {
   val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
   val sc: SparkContext = new SparkContext(conf)
 
-  var CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments.dat").map(CommentsData.parse)
-  var FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships.dat").map(FriendshipsData.parse)
-  var LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes.dat").map(LikesData.parse)
-  var PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts.dat").map(PostsData.parse)
+  //var CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments.dat").map(CommentsData.parse)
+  //var FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships.dat").map(FriendshipsData.parse)
+  //var LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes.dat").map(LikesData.parse)
+  //var PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts.dat").map(PostsData.parse)
 
 
 
@@ -45,7 +45,7 @@ object WikipediaRanking {
 
     var i = 0
     /** Don't know why start at Jan 01 */
-    while(i < 30) {
+    while(i < 29) {
       i = i + 1
       val date : Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24)
       currentDate = new Timestamp(date.getTime())
@@ -60,26 +60,21 @@ object WikipediaRanking {
 
     i = 0
     //while (true) {
-    while (i < 100) {
+    while (i < 10) {
       i = i + 1
-      CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments"+i+".dat").map(CommentsData.parse)
-      FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships"+i+".dat").map(FriendshipsData.parse)
-      LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes"+i+".dat").map(LikesData.parse)
-      PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts"+i+".dat").map(PostsData.parse)
-      
-      println("현재 날짜    : " + currentDate.toString)
+      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments"+i+".dat").map(CommentsData.parse)
+      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships"+i+".dat").map(FriendshipsData.parse)
+      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes"+i+".dat").map(LikesData.parse)
+      val PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts"+i+".dat").map(PostsData.parse)
 
+      // print test
+      println("현재 날짜    : " + currentDate.toString)
       val printTemp :String = (Query1.daysTimestamp map (x => x.toString)).mkString(" ")
       println("timestamps : " + printTemp)
 
-      /** put data in queue */
-      //processPost(currentDate, Query1.daysTimestamp.head)
-      /** Query1.posts = PostsRDD*/
-      //PostsRDD.foreach(p => Query1.posts += new Post(p.post_id, Query1.daysTimestamp.head))
-      //val printTemp2 :String = (Query1.posts map (x => x.toString)).mkString(" ")
-      //println("all posts  : \n" + printTemp2)
 
-
+      /** trying Query1 in distributed way but failed*/
+/*
       val postKeyID = PostsRDD.map (p => (p.post_id, p))
 
       val withPostID    = CommentsRDD.filter(c => c.post_commented  != 0).map(c => (c.post_commented, c)).groupByKey()
@@ -87,26 +82,64 @@ object WikipediaRanking {
 
       val postsComments : RDD[(PostInfo, Option[Iterable[CommentInfo]])] =
         postKeyID.leftOuterJoin(withPostID).values
+*/
 
+      /** connect comments to according posts */
+      CommentsRDD.collect().map(c => (c,
+        if (c.comment_replied == 0) // comment on post
+          Query1.insertConnection(c.comment_id, c.post_commented)
+        else { // comment on comment
+          val postedID : Long = Query1.connectedPost(c.comment_replied)
+          Query1.insertConnection(c.comment_id, postedID)
+        }
+      ))
+      // commentID to PostID
+      val commentPost : RDD[(Long, Long)] = sc.parallelize(Query1.connectedPost.toSeq)
+      val printTemp1 : String = commentPost.collect.map { case (c,p) => c + " : " + p} mkString ("\n")
+      println(printTemp1)
 
+      /** refine posts RDD */
+      val posts : RDD[(Long, Post)] = PostsRDD.map{ p => (p.post_id, new Post(p.post_id, Query1.daysTimestamp.head))}
 
+      /** refine comments RDD */
+      val allComments : RDD[Comment] = CommentsRDD.map(c => new Comment(c.comment_id, Query1.daysTimestamp.head, c.timestamp))
+      val comments : RDD[(Long, Comment)] = allComments.map{ c => (c.commentID, c)}
 
+      /** extract posts and according comments */
+      val postCommentID : RDD[(Long, Iterable[Comment])] = commentPost.join(comments).values.groupByKey()
+      val postComment : RDD[(Post, Option[Iterable[Comment]])] = posts.leftOuterJoin(postCommentID).values
+      postComment.map{
+        case(p, None) => "Post : " + p + "\nComment : X"
+        case(p, c) => "Post : " + p + "\nComment : " + c}
+        .collect().foreach(println)
 
-      val comment2Post = CommentsRDD.map(c => (c,
-        if (c.comment_replied == 0)
-          (Query1.posts find (p => p.PostID == c.post_commented)).get
-        else
-          Query1.connectedPost(c.comment_replied)))
+      /** calculate scores */
+      val scores : RDD[(Int, (Post, Option[Iterable[Comment]]))] = {
+        def addScore(score: Int, comment: Comment): Int =
+          comment.getScore() + score
 
-      comment2Post.foreach{ case(c, p) => p.addComment(new Comment(c.comment_id, Query1.daysTimestamp.head, c.timestamp)) }
-      comment2Post.foreach{ case(c, p) => Query1.insertConnection(c.comment_id, p) }
-      comment2Post.foreach{ case(c, p) => Query1.postsUpdate += p}
+        postComment.map {
+          case (post, None) => (post.getScore(), (post, None))
+          case (post, comments) =>
+          val scores = post.getScore() + comments.get.aggregate(0)(addScore, _ + _)
+
+          (scores, (post, comments))
+        }
+      }
+
+      /** get max */
+      val sorted = scores.sortByKey()
+      sorted.map{
+        case(s, (p, None)) => "Score : " + s + "\nPost : " + p + "\nComment : X"
+        case(s, (p, c)) => "Score : " + s + "\nPost : " + p + "\nComment : " + c}
+        .collect().foreach(println)
+      //val extractedTop3 : Array[(Int, (Post, Option[Iterable[Comment]]))] = sorted.take(3)
+      //val top3 : Array[Post] = extractedTop3 map{ case( score, (post, comments)) => post}
 
 
       /** calculate */
-      Threads.postRealTime(0)
-      val printTemp3: String = Query1.TOP3.getTopPosts() map {p => p.PostID} mkString (" ")
-      println("TOP3 : " + printTemp3)
+      //val printTemp3: String = top3 map {p => p.PostID} mkString (" ")
+      //println("TOP3 : " + printTemp3)
 
       println()
 
@@ -126,6 +159,11 @@ object WikipediaRanking {
     println(timing)
     sc.stop()
   }
+
+  def main2(args: Array[String]): Unit = {
+
+  }
+
 
   val timing = new StringBuffer
   def timed[T](label: String, code: => T): T = {

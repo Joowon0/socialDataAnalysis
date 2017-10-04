@@ -16,7 +16,7 @@ trait Writing {
 }
 
 case class Post(PostID: Long, timestamp: Timestamp) extends Writing {
-  val totalScore: Var[Int] = Var(0)
+  val totalScore: Var[Int] = Var(10)
   def getScore(): Int = totalScore()
   val comments : ParHashSet[Comment] = ParHashSet()
 
@@ -93,7 +93,7 @@ case object Empty extends Writing {
 }
 
 // use method Date(int year, int month, int date) for new Date
-class Timestamp(timestamp: Date) {
+class Timestamp(timestamp: Date) extends java.io.Serializable {
   val score = Var(10)
 
   def decrease() : Unit = {

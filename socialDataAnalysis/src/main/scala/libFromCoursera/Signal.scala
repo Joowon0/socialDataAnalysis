@@ -7,7 +7,7 @@ package libFromCoursera
   */
 import scala.util.DynamicVariable
 
-class Signal[T](expr: => T) {
+class Signal[T](expr: => T) extends java.io.Serializable {
   import Signal._
   private var myExpr: () => T = _
   private var myValue: T = _

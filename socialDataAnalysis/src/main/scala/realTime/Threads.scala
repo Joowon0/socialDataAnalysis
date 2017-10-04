@@ -1,6 +1,6 @@
 package realTime
 
-import libFromCoursera.parallel
+//import libFromCoursera.parallel
 
 object Threads {
   val threshold = 100
@@ -34,7 +34,7 @@ object Threads {
     // dividing into parallel
     else {
       /** Not sure if this part works in parallel*/
-      val (a1, a2) = parallel(postRealTime(loadNum / 2), postRealTime(loadNum - loadNum / 2))
+      //val (a1, a2) = parallel(postRealTime(loadNum / 2), postRealTime(loadNum - loadNum / 2))
     }
   }
 }
