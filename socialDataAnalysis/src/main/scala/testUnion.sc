@@ -8,34 +8,34 @@ conf.setAppName("Simple Application")
 val sc = new SparkContext(conf)
 
 class Score(i : Int) {
-  val sc = Var(i)
+  var sc = i
   def decrease() = {
-    val temp = sc() - 1
-    sc() = temp
+    sc = sc - 1
   }
 }
 
 class Obj(val score: Score) {}
 val score10 = new Score(10)
-println(score10.sc())
+println(score10.sc)
 
 val x = score10.decrease()
-println(score10.sc())
+println(score10.sc)
 
 val o : Obj = new Obj(score10)
 val o2 : Obj = new Obj(score10)
 
 val r1 : RDD[Obj] = sc.parallelize(Seq(o, o2))
 val r2 : RDD[Obj]= sc.parallelize(Seq(o, o2))
-
+val r3 = (r1 union r2).groupBy(o => o.score)
 score10.decrease()
-println(score10.sc())
+println(score10.sc)
 val a : Array[Obj] = r1.collect()
 val b : Array[Obj] = r2.collect()
-a.foreach(println)
-println(a.head.score.sc())
-println(b.head.score.sc())
-
+val c = r3.collect()
+c.foreach(println)
+println(a.head.score.sc)
+println(b.head.score.sc)
+//println(c.head.score.sc)
 
 /*
 

@@ -16,7 +16,7 @@ trait Writing {
 }
 
 case class Post(PostID: Long, timestamp: Timestamp) extends Writing {
-  def getScore() = timestamp.score()
+  def getScore() = timestamp.score
 
   /*override def equals(obj: scala.Any): Boolean = {
     obj.isInstanceOf[Post] && (this.PostID == (obj.asInstanceOf[Post].PostID))
@@ -34,7 +34,7 @@ case class Post(PostID: Long, timestamp: Timestamp) extends Writing {
 //                   used in Query2
 case class Comment (commentID: Long, date_timestamp: Timestamp, sec_timestamp: Date) extends Writing {
   // Query1
-  def getScore() = date_timestamp.score()
+  def getScore() = date_timestamp.score
 
 
   /*// Query2
