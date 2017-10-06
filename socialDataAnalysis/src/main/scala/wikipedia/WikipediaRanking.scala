@@ -114,12 +114,15 @@ object WikipediaRanking {
       val newPostComment: RDD[(Post, Option[Iterable[Comment]])] = allPosts.leftOuterJoin(newPostIDComment).values
       val newRefinedPostComment: RDD[(Post, Set[Comment])] = newPostComment.map { case (p, iter) => (p, iter.toSet.flatten) }
       val allPostComment: RDD[(Post, Set[Comment] )] = Posts union newRefinedPostComment
-      val groupAllPostComment: RDD[(Post, Set[Comment])] = allPostComment.groupBy {
-        case(key, value) => key // remove PostID
-      }.map{
-        case (postID, set) =>
-          val comments = set.flatMap { case (postID, eachSet) => eachSet }
-        (set.head._1, comments.toSet)
+      val groupAllPostComment: RDD[(Post, Set[Comment])] = {
+        val group =  allPostComment.groupBy { case (post, value) => post.PostID }.values
+        val refine: RDD[(Post, Set[Comment])] =
+          group.map {
+            case set =>
+              val comments = set.flatMap { case (post, eachSet) => eachSet }
+              (set.head._1, comments.toSet)
+          }
+        refine
       }
 
       /** function that calculate scores */
