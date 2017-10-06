@@ -18,6 +18,10 @@ trait Writing {
 case class Post(PostID: Long, timestamp: Timestamp) extends Writing {
   def getScore() = timestamp.score()
 
+  override def equals(obj: scala.Any): Boolean = {
+    obj.isInstanceOf[Post] && (this.PostID == (obj.asInstanceOf[Post].PostID))
+  }
+
   override def toString: String =
     "ID : " + PostID + ", " +
     "TS : " + timestamp.toString +

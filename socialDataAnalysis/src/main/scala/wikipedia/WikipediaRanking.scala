@@ -57,8 +57,8 @@ object WikipediaRanking {
     main_recur(1, sc.emptyRDD, List(new dataTypes.Timestamp(date2)), Map())
 
     /**
-      * @param i             - count the number of recursion
-      * @param Posts         - Structures to store all Posts
+      * @param i              - count the number of recursion
+      * @param Posts          - Structures to store all Posts
       * @param daysTimestamp - all of timestamps
       * @param connectedPost - given a comment ID, able to find corresponding posts
       */
@@ -78,7 +78,7 @@ object WikipediaRanking {
       val printTemp: String = (daysTimestamp map (x => x.toString)).mkString(" ")
       println("timestamps : " + printTemp)
 
-      /** connect comments to according posts */
+      /** connect comments to according posts (sequential part) */
       val commentTemp = CommentsRDD.collect()
       val commentSize = commentTemp.length
 
@@ -94,27 +94,32 @@ object WikipediaRanking {
           }
         }
       }
-      val newConnection = connect(connectedPost, 0)
+      val allConnection = connect(connectedPost, 0)
 
-      val commentPost: RDD[(Long, Long)] = sc.parallelize(newConnection.toSeq)
+      val commentPost: RDD[(Long, Long)] = sc.parallelize(allConnection.toSeq)
       //val printTemp1 : String = commentPost.collect.map { case (c,p) => c + " : " + p} mkString ("\n")
       //println(printTemp1)
 
       /** refine posts RDD */
       val oldPosts: RDD[(Long, Post)] = Posts.keys.map { p => (p.PostID, p) }
       val newPosts: RDD[(Long, Post)] = PostsRDD.map { p => (p.post_id, new Post(p.post_id, daysTimestamp.head)) }
-      val posts: RDD[(Long, Post)] = oldPosts union newPosts
+      val allPosts: RDD[(Long, Post)] = oldPosts union newPosts
 
       /** refine comments RDD */
       val newRefinedComments: RDD[Comment] = CommentsRDD.map(c => new Comment(c.comment_id, daysTimestamp.head, c.timestamp))
       val newComments: RDD[(Long, Comment)] = newRefinedComments.map { c => (c.commentID, c) }
 
       /** extract posts and according comments */
-      val postCommentID: RDD[(Long, Iterable[Comment])] = commentPost.join(newComments).values.groupByKey()
-      val newPostComment: RDD[(Post, Option[Iterable[Comment]])] = posts.leftOuterJoin(postCommentID).values
+      val newPostIDComment: RDD[(Long, Iterable[Comment])] = commentPost.join(newComments).values.groupByKey()
+      val newPostComment: RDD[(Post, Option[Iterable[Comment]])] = allPosts.leftOuterJoin(newPostIDComment).values
       val newRefinedPostComment: RDD[(Post, Set[Comment])] = newPostComment.map { case (p, iter) => (p, iter.toSet.flatten) }
-      val allPostComment: RDD[(Post, Set[Comment])] = (Posts union newRefinedPostComment).groupByKey().map {
-        case (p, set) => (p, set.flatten.toSet)
+      val allPostComment: RDD[(Post, Set[Comment] )] = Posts union newRefinedPostComment
+      val groupAllPostComment: RDD[(Post, Set[Comment])] = allPostComment.groupBy {
+        case(key, value) => key // remove PostID
+      }.map{
+        case (postID, set) =>
+          val comments = set.flatMap { case (postID, eachSet) => eachSet }
+        (set.head._1, comments.toSet)
       }
 
       /** function that calculate scores */
@@ -134,7 +139,7 @@ object WikipediaRanking {
         }
       //val scoreUpdate = allPostComment.map{ case(post, comments) => post.getScore}
       /** get max */
-      val sorted: RDD[(Int, (Post, Set[Comment]))] = allPostComment.map(rdd => (scores(rdd), rdd)).sortByKey()
+      val sorted: RDD[(Int, (Post, Set[Comment]))] = groupAllPostComment.map(rdd => (scores(rdd), rdd)).sortByKey()
       sorted.map {
         case (s, (p, c)) => "Score : " + s + "\nPost : " + p + "\nComment : " + c
       }.collect().foreach(println)
@@ -155,10 +160,10 @@ object WikipediaRanking {
       //new dataTypes.Timestamp(date) +=: daysTimestamp // add a current datePostsRDD.groupBy(p => p.timestamp)
 
       /** filter posts that is under 0 */
-      val filteredPosts = allPostComment.filter(p => scores(p) > 0)
+      val filteredPosts = groupAllPostComment.filter(p => scores(p) > 0)
       //Posts = filteredPosts
 
-      main_recur(i+1, filteredPosts, new dataTypes.Timestamp(date) :: daysTimestamp, newConnection)
+      main_recur(i+1, filteredPosts, new dataTypes.Timestamp(date) :: daysTimestamp, allConnection)
     }
 
     println(timing)
