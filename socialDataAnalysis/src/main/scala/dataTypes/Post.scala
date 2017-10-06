@@ -16,8 +16,11 @@ trait Writing {
 }
 
 case class Post(PostID: Long, timestamp: Timestamp) extends Writing {
-  val totalScore: Var[Int] = Var(10)
+  def getScore() = timestamp.score()
+/*  val totalScore: Var[Int] = Var(10)
   def getScore(): Int = totalScore()
+*/
+
   /*val comments : ParHashSet[Comment] = ParHashSet()
 
   def update(): Unit =
