@@ -18,14 +18,6 @@ object WikipediaRanking {
   val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
   val sc: SparkContext = new SparkContext(conf)
 
-/*  /** Structures to store all Posts */
-  var Posts : RDD[(Post, Set[Comment])] = sc.emptyRDD
-  /** all of timestamps */
-  val daysTimestamp : mutable.MutableList[dataTypes.Timestamp] = mutable.MutableList()
-  /** given a comment ID, able to find corresponding posts */
-  var connectedPost : Map[Long, Long] = Map() // withDefaultValue (-1)*/
-
-
   val timing = new StringBuffer
   def timed[T](label: String, code: => T): T = {
     val start = System.currentTimeMillis()

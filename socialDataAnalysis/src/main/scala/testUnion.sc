@@ -1,15 +1,43 @@
-import java.util.Date
-
-import dataTypes.Post
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
+import libFromCoursera.Var
 
 val conf = new SparkConf()
 conf.setMaster("local[*]")
 conf.setAppName("Simple Application")
-
 val sc = new SparkContext(conf)
 
+class Score(i : Int) {
+  val sc = Var(i)
+  def decrease() = {
+    val temp = sc() - 1
+    sc() = temp
+  }
+}
+
+class Obj(val score: Score) {}
+val score10 = new Score(10)
+println(score10.sc())
+
+val x = score10.decrease()
+println(score10.sc())
+
+val o : Obj = new Obj(score10)
+val o2 : Obj = new Obj(score10)
+
+val r1 : RDD[Obj] = sc.parallelize(Seq(o, o2))
+val r2 : RDD[Obj]= sc.parallelize(Seq(o, o2))
+
+score10.decrease()
+println(score10.sc())
+val a : Array[Obj] = r1.collect()
+val b : Array[Obj] = r2.collect()
+a.foreach(println)
+println(a.head.score.sc())
+println(b.head.score.sc())
+
+
+/*
 
 //val a: Map[Int, Option[Iterable[Int]]] = Map(10 -> Some(Iterable(1,2,3)), 11 -> Some(Iterable(4,5,6)), 12 -> None)
 val b: Map[Int, Option[Iterable[Int]]] = Map(10 -> Some(Iterable(3,4,5)), 11 -> None, 12 -> None)
@@ -39,7 +67,7 @@ val distinct = yz.groupBy {
 }.collect()
 
 
-distinct.foreach(println)
+distinct.foreach(println)*/
 
 /*
 val ts = new dataTypes.Timestamp(new Date())
