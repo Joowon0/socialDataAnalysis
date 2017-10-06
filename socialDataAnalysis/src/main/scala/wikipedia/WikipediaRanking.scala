@@ -132,7 +132,7 @@ object WikipediaRanking {
             }
           }
         }
-      val scoreUpdate = allPostComment.map{ case(post, comments) => post.getScore}
+      //val scoreUpdate = allPostComment.map{ case(post, comments) => post.getScore}
       /** get max */
       val sorted: RDD[(Int, (Post, Set[Comment]))] = allPostComment.map(rdd => (scores(rdd), rdd)).sortByKey()
       sorted.map {

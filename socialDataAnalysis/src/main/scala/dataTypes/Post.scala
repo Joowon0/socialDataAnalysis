@@ -17,20 +17,10 @@ trait Writing {
 
 case class Post(PostID: Long, timestamp: Timestamp) extends Writing {
   def getScore() = timestamp.score()
-/*  val totalScore: Var[Int] = Var(10)
-  def getScore(): Int = totalScore()
-*/
-
-  /*val comments : ParHashSet[Comment] = ParHashSet()
-
-  def update(): Unit =
-    totalScore() = (comments map (_.getScore()) sum) + timestamp.score()
-  def addComment(comment: Comment) : Unit =
-    comments + comment*/
 
   override def toString: String =
-    "ID : " + PostID + ", "
-    "TS : " + timestamp.toString + ", "
+    "ID : " + PostID + ", " +
+    "TS : " + timestamp.toString +
     "sc : " + getScore() + "\n"
 }
 
