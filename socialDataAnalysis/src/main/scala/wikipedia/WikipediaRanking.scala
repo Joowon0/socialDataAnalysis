@@ -55,7 +55,7 @@ object WikipediaRanking {
       * @param connectedPost - given a comment ID, able to find corresponding posts
       */
     def main_recur(i : Int, Posts : RDD[(Post, Set[Comment])], daysTimestamp : List[dataTypes.Timestamp], connectedPost : Map[Long, Long]) {
-      if (i > 3) return
+      if (i > 11) return
       //      def insertConnection(commentID: Long, postID: Long) : Unit =
 //        connectedPost = connectedPost + (commentID -> postID)
 
@@ -73,11 +73,15 @@ object WikipediaRanking {
       /** connect comments to according posts (sequential part) */
       val commentTemp = CommentsRDD.collect()
       val commentSize = commentTemp.length
+      println("comment num : " + commentSize)
+      commentTemp.foreach(println)
+
 
       def connect(connection : Map[Long, Long], index : Int): Map[Long, Long] = {
+        println("Index : " + index)
         if (index >= commentSize) connection
         else {
-          val c = commentTemp(i)
+          val c = commentTemp(index)
           if (c.comment_replied == 0)
             connect(connection + (c.comment_id -> c.post_commented), index + 1)
           else {
@@ -136,7 +140,7 @@ object WikipediaRanking {
       /** get max */
       val sorted: RDD[(Int, (Post, Set[Comment]))] = groupAllPostComment.map(rdd => (scores(rdd), rdd)).sortByKey()
       sorted.map {
-        case (s, (p, c)) => "Score : " + s + "\nPost : " + p + "\nComment : " + c
+        case (s, (p, c)) => "Score : " + s + "\nPost : " + p + "Comment : " + c + "\n"
       }.collect().foreach(println)
       //val extractedTop3 : Array[(Int, (Post, Option[Iterable[Comment]]))] = sorted.take(3)
       //val top3 : Array[Post] = extractedTop3 map{ case( score, (post, comments)) => post}
@@ -148,17 +152,24 @@ object WikipediaRanking {
 
       println()
 
+
       /** processes regards to date */
       val date: Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24) // 하루 지남
       currentDate = new Timestamp(date.getTime())
       daysTimestamp map (_.decrease()) // decrease the scores of the old dates
-      //new dataTypes.Timestamp(date) +=: daysTimestamp // add a current datePostsRDD.groupBy(p => p.timestamp)
+
+      val decreasedPostComment: RDD[(Post, Set[Comment])] =
+        groupAllPostComment.map {
+          case (post, comments) =>
+            post.decrease()
+            comments.map{ case c => c.decrease()}
+            (post, comments)
+        }
 
       /** filter posts that is under 0 */
-      val filteredPosts = groupAllPostComment.filter(p => scores(p) > 0)
-      //Posts = filteredPosts
+      val filteredPosts = decreasedPostComment.filter(p => scores(p) > 0)
 
-      main_recur(i+1, filteredPosts, new dataTypes.Timestamp(date) :: daysTimestamp, allConnection)
+      main_recur( i+1, filteredPosts, new dataTypes.Timestamp(date) :: daysTimestamp, allConnection)
     }
 
     println(timing)
