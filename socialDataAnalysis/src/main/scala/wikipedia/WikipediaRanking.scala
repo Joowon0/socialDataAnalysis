@@ -55,10 +55,10 @@ object WikipediaRanking {
       if (i > 11) return
 
       /** RDD read from file */
-      val CommentsRDD: RDD[CommentInfo] = sc.textFile("src/main/scala/tempData/comments" + i + ".dat").map(CommentsData.parse)
-      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("src/main/scala/tempData/friendships" + i + ".dat").map(FriendshipsData.parse)
-      val LikesRDD: RDD[LikeInfo] = sc.textFile("src/main/scala/tempData/likes" + i + ".dat").map(LikesData.parse)
-      val PostsRDD: RDD[PostInfo] = sc.textFile("src/main/scala/tempData/posts" + i + ".dat").map(PostsData.parse)
+      val CommentsRDD: RDD[CommentInfo] = sc.textFile("src/main/scala/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
+      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("src/main/scala/data_day/friendships/friendships" + i + ".dat").map(FriendshipsData.parse)
+      val LikesRDD: RDD[LikeInfo] = sc.textFile("src/main/scala/data_day/likes/likes" + i + ".dat").map(LikesData.parse)
+      val PostsRDD: RDD[PostInfo] = sc.textFile("src/main/scala/data_day/posts/posts" + i + ".dat").map(PostsData.parse)
 //      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments" + i + ".dat").map(CommentsData.parse)
 //      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships" + i + ".dat").map(FriendshipsData.parse)
 //      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes" + i + ".dat").map(LikesData.parse)
@@ -72,12 +72,11 @@ object WikipediaRanking {
       /** connect comments to according posts (sequential part) */
       val commentTemp = CommentsRDD.collect()
       val commentSize = commentTemp.length
-      println("comment num : " + commentSize)
-      commentTemp.foreach(println)
+//      println("comment num : " + commentSize)
+//      commentTemp.foreach(println)
 
 
       def connect(connection : Map[Long, Long], index : Int): Map[Long, Long] = {
-        println("Index : " + index)
         if (index >= commentSize) connection
         else {
           val c = commentTemp(index)

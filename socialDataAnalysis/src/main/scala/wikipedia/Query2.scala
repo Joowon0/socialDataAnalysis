@@ -5,7 +5,6 @@ import java.text.{DateFormat, SimpleDateFormat}
 import java.util.Date
 
 import RDDdataTypes.{CommentInfo, FriendshipInfo, LikeInfo, PostInfo}
-import dataTypes._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 
@@ -71,37 +70,74 @@ object Query2 {
       println("timestamps : " + printTemp)
 
       /** Comments */
-      val newComments : RDD[(Long, Long)] = CommentsRDD.map(c=> (c.comment_id, c.comment_id))
+      val newCommentsPair : RDD[(Long, Long)] = CommentsRDD.map(c=> (c.comment_id, c.comment_id))
 
       /** Likes */
       val likesCommentUser : RDD[(Long, Long)] = LikesRDD.map(c => (c.comment_id, c.user_id))
-      val likes : RDD[(Long, Iterable[Long])] = likesCommentUser groupByKey
-      val allLikes : RDD[(Long, Iterable[Long])] = ((newComments leftOuterJoin likes) values) mapValues {case None => Iterable()}
+      val likesCommentUserGroup : RDD[(Long, Iterable[Long])] = likesCommentUser groupByKey
+      val likesCommentUserNil : RDD[(Long, Iterable[Long])] = ((newCommentsPair leftOuterJoin likesCommentUserGroup) values) mapValues {case None => Iterable()}
 
+      /** users that liked to new comments */
       val allUsers : RDD[Long] = likesCommentUser map (_._2) distinct
       val allUsersPair : RDD[(Long, Long)] = allUsers map (u => (u,u))
+
       // print for test
       val printTemp1 : String = allUsers.collect.map { case (u) => "User " + u } mkString ("\n")
       println(printTemp1)
-      val printTemp2 : String = allLikes.collect.map {  case (c, us) => "Comment " + c + " : " + us.map(f => "user" + f + ", ")} mkString ("\n")
+      val printTemp2 : String = likesCommentUserNil.collect.map {  case (c, us) => "Comment " + c + " : " + us.map(f => "user" + f + ", ")} mkString ("\n")
       println(printTemp2)
 
-      /** make friendships into map */
+      /** combine old and new friendships  */
       val newFriendships : RDD[(Long, Long)] = FriendshipsRDD.map(f => (f.user_id_1, f.user_id_2))
       val allFriendships : RDD[(Long, Long)] = Friendships union newFriendships
       val allFriendshipsRev : RDD[(Long, Long)] = allFriendships map {case (u1, u2) => (u2, u1)}
 
+      /** filter out unnecessary */
       val useFriendships : RDD[(Long, Long)] = allFriendships join allUsersPair values
       val useFriendshipsRev : RDD[(Long, Long)] = allFriendshipsRev join allUsersPair values
       val useFriendshipsAll : RDD[(Long, Long)] = useFriendships union (useFriendshipsRev map {case (u1, u2) => (u2, u1)})
 
+      /** make friendships into map */
+/*
       val bothWayAllFriendships : RDD[(Long, Long)] = useFriendshipsAll union (useFriendshipsAll map { case (f1, f2) =>  (f2, f1) })
       val refinedFrienships : RDD[(Long, Iterable[Long])] = bothWayAllFriendships groupByKey
+      val allRefinedFrienships : RDD[(Long, Iterable[Long])] = (allUsersPair leftOuterJoin refinedFrienships values) mapValues  {case None => Iterable()}
       // print for test
-      val printTemp3 : String = refinedFrienships.collect.map { case (u, friends) => "User " + u + " : " + friends.map(f => f + ", ")} mkString ("\n")
+      val printTemp3 : String = allRefinedFrienships.collect.map { case (u, friends) => "User " + u + " : " + friends.map(f => f + ", ")} mkString ("\n")
       println(printTemp3)
+*/
 
+      /** making into graph */
+      val friendships : Array[(Long, Long)] = useFriendshipsAll.collect()
+      val commentFriendships : RDD[(Long, Iterable[(Long, Long)])] = likesCommentUserNil mapValues
+        ( us => friendships filter { case (u1, u2) => (us exists (_ == u1)) || (us exists (_ == u2))})
+      val commentLikeFrienship : RDD[(Long, (Iterable[Iterable[Long]], Iterable[(Long, Long)]))] =
+        (likesCommentUserNil mapValues (u => Iterable(u))) join commentFriendships
 
+      def graphRec (vertex : Set[Set[Long]], edges : Iterable[(Long, Long)]): Set[Set[Long]] = {
+        if (edges isEmpty) vertex
+        else {
+          val e = edges.head
+          val graph1 = vertex find (_.contains(e._1)) get
+          val graph2 = vertex find (_.contains(e._2)) get
+
+          if (graph1 == graph2)
+            graphRec(vertex, edges.tail)
+          else {
+            val rmGraph = vertex - graph1 - graph2
+            val mkGraph = rmGraph + (graph1 union graph2)
+            graphRec(mkGraph, edges.tail)
+          }
+        }
+      }
+      val refinedType : RDD[(Long, (Set[Set[Long]], List[(Long, Long)]))] =
+        commentLikeFrienship mapValues {case(v, e) => (v.map(_.toSet).toSet, e.toList) }
+      val graph : Array[(Long, Set[Set[Long]])] = (refinedType collect) map {case(c, (v, e)) => (c,graphRec(v, e))}
+      val graphSize : Array[(Long, Int)] = graph map { case (c, vs) => (c, vs.map(_.size).max)}
+      // print for test
+      val printTemp4 : String = graphSize map { case (c, s) => "Comment : " + c + "\tSize : " + s} mkString ("\n")
+      println(printTemp4)
+      
 
       /** processes regards to date */
       val date: Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24) // 하루 지남
