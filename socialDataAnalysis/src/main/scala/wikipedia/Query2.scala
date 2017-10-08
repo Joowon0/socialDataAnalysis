@@ -43,30 +43,57 @@ object Query2 {
     //new dataTypes.Timestamp(date2) +=: daysTimestamp // realTime.timestamp defined here
 
     /** calling recursive function */
-    main_recur(1, sc.emptyRDD, List(new dataTypes.Timestamp(date2)), Map())
-
+    main_recur(1, 6 * 60 * 60, 5, sc.emptyRDD, List(new dataTypes.Timestamp(date2)))
 
     /**
-      * @param i - count the number of recursion
-      * @param k - number of post we want to get
-      * @param d - within k seconds
-      * @param Comments    - Post ID  -> Set of Comments
-      * @param Likes       - Comments -> Likes
-      * @param Friendships - User ID  -> Set of user id
+      * @param i               - count the number of recursion
+      * @param k               - number of post we want to get
+      * @param d               - within k seconds
+      * @param Friendships   - User ID  -> Set of user id
+      * @param daysTimestamp - all of timestamps
       */
-    def main_recur(i : Int, k: Int, d: Int, Comments : RDD[(Long, Set[Comment])], Likes : RDD[(Long, Long)], Friendships : RDD[(Long, Iterable[Long])]] ) {
-      if (i > 11) return
+    def main_recur(i : Int, k: Int, d: Int, Friendships : RDD[(Long, Long)], daysTimestamp : List[dataTypes.Timestamp] ) {
+      if (i > 12) return
 
       /** RDD read from file */
-      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments" + i + ".dat").map(CommentsData.parse)
-      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships" + i + ".dat").map(FriendshipsData.parse)
-      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes" + i + ".dat").map(LikesData.parse)
-      val PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts" + i + ".dat").map(PostsData.parse)
+      val CommentsRDD: RDD[CommentInfo] = sc.textFile("src/main/scala/tempData/comments" + i + ".dat").map(CommentsData.parse)
+      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("src/main/scala/tempData/friendships" + i + ".dat").map(FriendshipsData.parse)
+      val LikesRDD: RDD[LikeInfo] = sc.textFile("src/main/scala/tempData/likes" + i + ".dat").map(LikesData.parse)
+      val PostsRDD: RDD[PostInfo] = sc.textFile("src/main/scala/tempData/posts" + i + ".dat").map(PostsData.parse)
+//      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments" + i + ".dat").map(CommentsData.parse)
+//      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships" + i + ".dat").map(FriendshipsData.parse)
+//      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes" + i + ".dat").map(LikesData.parse)
+//      val PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts" + i + ".dat").map(PostsData.parse)
 
       // print test
       println("현재 날짜    : " + currentDate.toString)
       val printTemp: String = (daysTimestamp map (x => x.toString)).mkString(" ")
       println("timestamps : " + printTemp)
+
+      /** Comments */
+      val newComments : RDD[(Long, Long)] = CommentsRDD.map(c=> (c.comment_id, c.comment_id))
+
+      /** Likes */
+      val likesCommentUser : RDD[(Long, Long)] = LikesRDD.map(c => (c.comment_id, c.user_id))
+      val likes : RDD[(Long, Iterable[Long])] = likesCommentUser groupByKey
+      val allLikes : RDD[(Long, Iterable[Long])] = ((newComments leftOuterJoin likes) values) mapValues {case None => Iterable()}
+
+      val allusers : RDD[Long] = likesCommentUser map (_._2) distinct
+      // print for test
+      val printTemp1 : String = allusers.collect.map { case (u) => "User " + u } mkString ("\n")
+      println(printTemp1)
+      val printTemp2 : String = allLikes.collect.map {  case (c, us) => "Comment " + c + " : " + us.map(f => "user" + f + ", ")} mkString ("\n")
+      println(printTemp2)
+
+      /** make friendships into map */
+      val newFriendships : RDD[(Long, Long)] = FriendshipsRDD.map(f => (f.user_id_1, f.user_id_2))
+      val allFriendships : RDD[(Long, Long)] = Friendships union newFriendships
+      val bothWayAllFriendships : RDD[(Long, Long)] = allFriendships union (allFriendships map { case (f1, f2) =>  (f2, f1) })
+      val refinedFrienships : RDD[(Long, Iterable[Long])] = bothWayAllFriendships groupByKey
+
+      // print for test
+      val printTemp3 : String = refinedFrienships.collect.map { case (u, friends) => "User " + u + " : " + friends.map(f => f + ", ")} mkString ("\n")
+      println(printTemp3)
 
 
       /** processes regards to date */
@@ -74,15 +101,7 @@ object Query2 {
       currentDate = new Timestamp(date.getTime())
       daysTimestamp map (_.decrease()) // decrease the scores of the old dates
 
-      val decreasedPostComment: RDD[(Post, Set[Comment])] =
-        groupAllPostComment.map {
-          case (post, comments) =>
-            post.decrease()
-            comments.map{ case c => c.decrease()}
-            (post, comments)
-        }
-
-      main_recur( i+1, filteredPosts, new dataTypes.Timestamp(date) :: daysTimestamp, allConnection)
+      main_recur( i+1, k, d, allFriendships, new dataTypes.Timestamp(date) :: daysTimestamp)
     }
 
     println(timing)

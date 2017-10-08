@@ -10,10 +10,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import dataTypes._
 
-
 object WikipediaRanking {
-  val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
-  //val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
+  //val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
+  val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
   val sc: SparkContext = new SparkContext(conf)
 
   val timing = new StringBuffer
@@ -44,24 +43,26 @@ object WikipediaRanking {
     //new dataTypes.Timestamp(date2) +=: daysTimestamp // realTime.timestamp defined here
 
     /** calling recursive function */
-    main_recur(1, sc.emptyRDD, List(new dataTypes.Timestamp(date2)), Map())
+    main_recur(1, sc.emptyRDD, Map(), List(new dataTypes.Timestamp(date2)))
 
     /**
       * @param i              - count the number of recursion
       * @param Posts          - Structures to store all Posts
-      * @param daysTimestamp - all of timestamps
       * @param connectedPost - given a comment ID, able to find corresponding posts
+      * @param daysTimestamp - all of timestamps
       */
-    def main_recur(i : Int, Posts : RDD[(Post, Set[Comment])], daysTimestamp : List[dataTypes.Timestamp], connectedPost : Map[Long, Long]) {
+    def main_recur(i : Int, Posts : RDD[(Post, Set[Comment])], connectedPost : Map[Long, Long], daysTimestamp : List[dataTypes.Timestamp]) {
       if (i > 11) return
-      //      def insertConnection(commentID: Long, postID: Long) : Unit =
-//        connectedPost = connectedPost + (commentID -> postID)
 
       /** RDD read from file */
-      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments" + i + ".dat").map(CommentsData.parse)
-      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships" + i + ".dat").map(FriendshipsData.parse)
-      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes" + i + ".dat").map(LikesData.parse)
-      val PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts" + i + ".dat").map(PostsData.parse)
+      val CommentsRDD: RDD[CommentInfo] = sc.textFile("src/main/scala/tempData/comments" + i + ".dat").map(CommentsData.parse)
+      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("src/main/scala/tempData/friendships" + i + ".dat").map(FriendshipsData.parse)
+      val LikesRDD: RDD[LikeInfo] = sc.textFile("src/main/scala/tempData/likes" + i + ".dat").map(LikesData.parse)
+      val PostsRDD: RDD[PostInfo] = sc.textFile("src/main/scala/tempData/posts" + i + ".dat").map(PostsData.parse)
+//      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments" + i + ".dat").map(CommentsData.parse)
+//      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships" + i + ".dat").map(FriendshipsData.parse)
+//      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes" + i + ".dat").map(LikesData.parse)
+//      val PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts" + i + ".dat").map(PostsData.parse)
 
       // print test
       println("현재 날짜    : " + currentDate.toString)
@@ -89,10 +90,7 @@ object WikipediaRanking {
         }
       }
       val allConnection = connect(connectedPost, 0)
-
       val commentPost: RDD[(Long, Long)] = sc.parallelize(allConnection.toSeq)
-      //val printTemp1 : String = commentPost.collect.map { case (c,p) => c + " : " + p} mkString ("\n")
-      //println(printTemp1)
 
       /** refine posts RDD */
       val oldPosts: RDD[(Long, Post)] = Posts.keys.map { p => (p.PostID, p) }
@@ -167,7 +165,7 @@ object WikipediaRanking {
       /** filter posts that is under 0 */
       val filteredPosts = decreasedPostComment.filter(p => scores(p) > 0)
 
-      main_recur( i+1, filteredPosts, new dataTypes.Timestamp(date) :: daysTimestamp, allConnection)
+      main_recur( i+1, filteredPosts, allConnection, new dataTypes.Timestamp(date) :: daysTimestamp)
     }
 
     println(timing)
