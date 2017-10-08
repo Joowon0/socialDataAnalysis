@@ -137,7 +137,7 @@ object Query2 {
       // print for test
       val printTemp4 : String = graphSize map { case (c, s) => "Comment : " + c + "\tSize : " + s} mkString ("\n")
       println(printTemp4)
-      
+
 
       /** processes regards to date */
       val date: Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24) // 하루 지남

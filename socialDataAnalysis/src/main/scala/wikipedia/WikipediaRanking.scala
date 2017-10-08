@@ -52,7 +52,7 @@ object WikipediaRanking {
       * @param daysTimestamp - all of timestamps
       */
     def main_recur(i : Int, Posts : RDD[(Post, Set[Comment])], connectedPost : Map[Long, Long], daysTimestamp : List[dataTypes.Timestamp]) {
-      if (i > 11) return
+      if (i > 20) return
 
       /** RDD read from file */
       val CommentsRDD: RDD[CommentInfo] = sc.textFile("src/main/scala/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
