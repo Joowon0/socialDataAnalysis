@@ -10,12 +10,10 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import dataTypes._
 
-import scala.collection.mutable
-
 
 object WikipediaRanking {
-  //val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
-  val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
+  val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
+  //val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
   val sc: SparkContext = new SparkContext(conf)
 
   val timing = new StringBuffer
