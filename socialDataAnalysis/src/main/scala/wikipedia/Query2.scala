@@ -78,9 +78,10 @@ object Query2 {
       val likes : RDD[(Long, Iterable[Long])] = likesCommentUser groupByKey
       val allLikes : RDD[(Long, Iterable[Long])] = ((newComments leftOuterJoin likes) values) mapValues {case None => Iterable()}
 
-      val allusers : RDD[Long] = likesCommentUser map (_._2) distinct
+      val allUsers : RDD[Long] = likesCommentUser map (_._2) distinct
+      val allUsersPair : RDD[(Long, Long)] = allUsers map (u => (u,u))
       // print for test
-      val printTemp1 : String = allusers.collect.map { case (u) => "User " + u } mkString ("\n")
+      val printTemp1 : String = allUsers.collect.map { case (u) => "User " + u } mkString ("\n")
       println(printTemp1)
       val printTemp2 : String = allLikes.collect.map {  case (c, us) => "Comment " + c + " : " + us.map(f => "user" + f + ", ")} mkString ("\n")
       println(printTemp2)
@@ -88,12 +89,18 @@ object Query2 {
       /** make friendships into map */
       val newFriendships : RDD[(Long, Long)] = FriendshipsRDD.map(f => (f.user_id_1, f.user_id_2))
       val allFriendships : RDD[(Long, Long)] = Friendships union newFriendships
-      val bothWayAllFriendships : RDD[(Long, Long)] = allFriendships union (allFriendships map { case (f1, f2) =>  (f2, f1) })
-      val refinedFrienships : RDD[(Long, Iterable[Long])] = bothWayAllFriendships groupByKey
+      val allFriendshipsRev : RDD[(Long, Long)] = allFriendships map {case (u1, u2) => (u2, u1)}
 
+      val useFriendships : RDD[(Long, Long)] = allFriendships join allUsersPair values
+      val useFriendshipsRev : RDD[(Long, Long)] = allFriendshipsRev join allUsersPair values
+      val useFriendshipsAll : RDD[(Long, Long)] = useFriendships union (useFriendshipsRev map {case (u1, u2) => (u2, u1)})
+
+      val bothWayAllFriendships : RDD[(Long, Long)] = useFriendshipsAll union (useFriendshipsAll map { case (f1, f2) =>  (f2, f1) })
+      val refinedFrienships : RDD[(Long, Iterable[Long])] = bothWayAllFriendships groupByKey
       // print for test
       val printTemp3 : String = refinedFrienships.collect.map { case (u, friends) => "User " + u + " : " + friends.map(f => f + ", ")} mkString ("\n")
       println(printTemp3)
+
 
 
       /** processes regards to date */
