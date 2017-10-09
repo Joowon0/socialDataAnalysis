@@ -12,8 +12,8 @@ import org.apache.spark.rdd.RDD
 object Query2 {
 
   def q2(args: Array[String]) {
-    val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
-    //val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
+    //val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
+    val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
     val sc: SparkContext = new SparkContext(conf)
 
     val timing = new StringBuffer
@@ -52,7 +52,7 @@ object Query2 {
       * @param daysTimestamp   - all of timestamps
       */
     def main_recur(i : Int, k: Int, d: Int, Friendships : RDD[(Long, Long)], daysTimestamp : List[dataTypes.Timestamp] ) {
-      if (i > 993) return
+      if (i > 5) return
 
       /** RDD read from file */
       val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/data_day_big/comments/comments" + i + ".dat").map(CommentsData.parse)
@@ -63,9 +63,10 @@ object Query2 {
 //      val LikesRDD: RDD[LikeInfo] = sc.textFile("src/main/scala/SampleData/likesSample.dat").map(LikesData.parse)
 
       // print test
-//      println("현재 날짜    : " + currentDate.toString)
-//      val printTemp: String = (daysTimestamp map (x => x.toString)).mkString(" ")
-//      println("timestamps : " + printTemp)
+      println("현재 날짜    : " + currentDate.toString)
+      val printTemp: String = (daysTimestamp map (x => x.toString)).mkString(" ")
+      println("timestamps : " + printTemp)
+
 
       /** Comments */
       val newCommentsPair       : RDD[(Long, Long)] = CommentsRDD.map(c=> (c.comment_id, c.comment_id))
@@ -77,6 +78,9 @@ object Query2 {
         ((newCommentsPair leftOuterJoin likesCommentUserGroup) values) mapValues {
           case None => Iterable()
           case Some(x) => x}
+
+//      val printTemp111 = likesCommentUserNil.collect.map {case (cid, users) => "CComment : " + cid + "\tUsers" + users.toString} mkString("\n")
+//      println(printTemp111)
 
       /** users that liked to new comments */
       val allUsers     : RDD[Long] = likesCommentUser map (_._2) distinct
@@ -94,45 +98,70 @@ object Query2 {
       /** combine old and new friendships  */
       val newFriendships    : RDD[(Long, Long)] = FriendshipsRDD.map(f => (f.user_id_1, f.user_id_2))
       val allFriendships    : RDD[(Long, Long)] = Friendships union newFriendships
-      //val allFriendshipsRev : RDD[(Long, Long)] = allFriendships map {case (u1, u2) => (u2, u1)}
+//      println("All friendships")
+//      val printT3 = allFriendships.collect.map{ case(u1, u2) => "User1 : " + u1 + "\tUser2 : " + u2} mkString ("\n")
+//      println(printT3)
 
       /** filter out unnecessary */
       val useFriendships    : RDD[(Long, Long)] = allFriendships join allUsersPair values
       val useFriendshipsRev : RDD[(Long, Long)] = allUsersPair join allFriendships values
+
+//      println("Friend case 1")
+//      val printT1 : String = useFriendships.collect.map{ case(u1, u2) => "User1 : " + u1 + "\tUser2 : " + u2} mkString ("\n")
+//      println(printT1)
+//      println("Friend case 2 (reverse)")
+
+//      val printT2 : String = useFriendshipsRev.collect.map{ case(u1, u2) => "User1 : " + u1 + "\tUser2 : " + u2} mkString ("\n")
+//      println(printT2)
+
       val useFriendshipsPair : RDD[((Long, Long), (Long, Long))] = useFriendships map (c => (c,c))
-      val useFriendshipsRevPair : RDD[((Long, Long), (Long, Long))] = useFriendshipsRev map (c => (c,c))
+      val useFriendshipsRevPair : RDD[((Long, Long), (Long, Long))] = useFriendshipsRev map {case (c1, c2) => ((c2, c1), (c2, c1))}
       val useFriendshipsAll : RDD[(Long, Long)] = useFriendshipsPair join useFriendshipsRevPair keys
+
       // print for test
+//      println("Using Friendships")
 //      val printTemp6 : String = useFriendshipsAll.collect.map { case (u1, u2 ) => "User1 : " + u1 + "\tUser2 : " + u2} mkString ("\n")
 //      println(printTemp6)
 
       /** making into graph */
       val friendships : Array[(Long, Long)] = useFriendshipsAll.collect()
       val commentFriendships : RDD[(Long, Iterable[(Long, Long)])] = likesCommentUserNil mapValues
-        ( us => friendships filter { case (u1, u2) => (us exists (_ == u1)) || (us exists (_ == u2))})
+        ( us => friendships filter { case (u1, u2) => (us exists (_ == u1)) && (us exists (_ == u2))})
+
 
       val initialGraph : RDD[(Long, Iterable[Iterable[Long]])] = likesCommentUserNil mapValues (u => u map (Iterable(_)))
       val commentLikeFriendship : RDD[(Long, (Iterable[Iterable[Long]], Iterable[(Long, Long)]))] = initialGraph join commentFriendships
+      println("initial graph")
+      val printTemp10 :String = initialGraph.collect.map{
+        case(cid, initial) => "Comment : " + cid + "\tUser : " + initial.map(_.toString)} mkString ("\n")
+      println(printTemp10)
+
+      println("connections")
+      val printTemp11 : String = commentFriendships.collect.map{
+        case(cid, fr) => "Comment : " + cid + "\tFri : " + fr.map(_.toString()) } mkString ("\n")
+      println(printTemp11)
 
       def graphRec (vertex : Set[Set[Long]], edges : Iterable[(Long, Long)]): Set[Set[Long]] = {
         if (edges isEmpty) vertex
         else {
           val e = edges.head
+
+          println(vertex)
           val graph1 : Set[Long] = vertex find (_.contains(e._1)) get
           val graph2 : Set[Long] = vertex find (_.contains(e._2)) get
 
-//          println (e._1 + " : " + graph1)
-//          println (e._2 + " : " + graph2)
+          println (e._1 + " : " + graph1)
+          println (e._2 + " : " + graph2)
 
           if (graph1 == graph2) {
-//            println("Remain Same")
-//            println(vertex + "\n")
+            println("Remain Same")
+            println(vertex + "\n")
             graphRec(vertex, edges.tail)
           }
           else {
             val rmGraph = vertex - graph1 - graph2
             val mkGraph = rmGraph + (graph1 union graph2)
-//            println(mkGraph + "\n")
+            println(mkGraph + "\n")
 
             graphRec(mkGraph, edges.tail)
           }
@@ -141,7 +170,13 @@ object Query2 {
 
       val refinedType : RDD[(Long, (Set[Set[Long]], List[(Long, Long)]))] =
         commentLikeFriendship mapValues {case(v, e) => (v.map(_.toSet).toSet, e.toList) }
-      val graph       : Array[(Long, Set[Set[Long]])] = (refinedType collect) map {case(c, (v, e)) => (c,graphRec(v, e))}
+
+
+      val graph       : Array[(Long, Set[Set[Long]])] = (refinedType collect) map {
+        case(c, (v, e)) =>
+          if (v.isEmpty) (c,Set(Set())) : ((Long, Set[Set[Long]]))
+          else (c,graphRec(v, e))
+      }
 
       /** calculate the max size of graph */
       val graphSize   : Array[(Long, Int)] = graph map {
@@ -170,14 +205,14 @@ object Query2 {
           size_ + comm_ + vert_ + edge_
       } mkString "\n"
 
-      val pw = new PrintWriter(new File("/home/ana/data/query2Out/" + i + ".dat" ))
-      //val pw = new PrintWriter(new File("src/main/scala/query2Out/" + i + ".dat" ))
+      //val pw = new PrintWriter(new File("/home/ana/data/query2Out/" + i + ".dat" ))
+      val pw = new PrintWriter(new File("src/main/scala/query2Out/" + i + ".dat" ))
       pw.write(resultFile )
       pw.close
 
       // print for test
-//      val printTemp4  : String = graphSize map { case (c, s) => "Comment : " + c + "\tSize : " + s} mkString ("\n")
-//      println(printTemp4)
+      val printTemp4  : String = graphSize map { case (c, s) => "Comment : " + c + "\tSize : " + s} mkString ("\n")
+      println(printTemp4)
 
       /** processes regards to date */
       val date: Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24) // 하루 지남
@@ -185,7 +220,7 @@ object Query2 {
       daysTimestamp map (_.decrease()) // decrease the scores of the old dates
       val filteredTS = daysTimestamp filter (ts => (ts.score > 0))
 
-      main_recur( i+1, k, d, Friendships, new dataTypes.Timestamp(date) :: filteredTS)
+      main_recur( i+1, k, d, allFriendships, new dataTypes.Timestamp(date) :: filteredTS)
     }
 
     println(timing)
