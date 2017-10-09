@@ -1,5 +1,6 @@
 package wikipedia
 
+import java.io.{File, PrintWriter}
 import java.sql.Timestamp
 import java.text.{DateFormat, SimpleDateFormat}
 import java.util.Date
@@ -41,7 +42,7 @@ object Query2 {
     currentDate = new Timestamp(date2.getTime())
 
     /** calling recursive function */
-    main_recur(1, 6 * 60 * 60, 5, sc.emptyRDD, List(new dataTypes.Timestamp(date2)))
+    main_recur(1, 5, 6 * 60 * 60, sc.emptyRDD, List(new dataTypes.Timestamp(date2)))
 
     /**
       * @param i               - count the number of recursion
@@ -51,7 +52,7 @@ object Query2 {
       * @param daysTimestamp   - all of timestamps
       */
     def main_recur(i : Int, k: Int, d: Int, Friendships : RDD[(Long, Long)], daysTimestamp : List[dataTypes.Timestamp] ) {
-      if (i > 100) return
+      if (i > 20) return
 
       /** RDD read from file */
       val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
@@ -81,14 +82,14 @@ object Query2 {
       val allUsers     : RDD[Long] = likesCommentUser map (_._2) distinct
       val allUsersPair : RDD[(Long, Long)] = allUsers map (u => (u,u))
       // print for test
-      println("All Users :")
-      println(allUsers collect() mkString " ")
+//      println("All Users :")
+//      println(allUsers collect() mkString " ")
 
       // print for test
-      val printTemp1 : String = allUsers.collect.map { case (u) => "User " + u } mkString ("\n")
-      println(printTemp1)
-      val printTemp2 : String = likesCommentUserNil.collect.map {  case (c, us) => "Comment " + c + " : " + us.map(f => "user" + f + ", ")} mkString ("\n")
-      println(printTemp2)
+//      val printTemp1 : String = allUsers.collect.map { case (u) => "User " + u } mkString ("\n")
+//      println(printTemp1)
+//      val printTemp2 : String = likesCommentUserNil.collect.map {  case (c, us) => "Comment " + c + " : " + us.map(f => "user" + f + ", ")} mkString ("\n")
+//      println(printTemp2)
 
       /** combine old and new friendships  */
       val newFriendships    : RDD[(Long, Long)] = FriendshipsRDD.map(f => (f.user_id_1, f.user_id_2))
@@ -102,8 +103,8 @@ object Query2 {
       val useFriendshipsRevPair : RDD[((Long, Long), (Long, Long))] = useFriendshipsRev map (c => (c,c))
       val useFriendshipsAll : RDD[(Long, Long)] = useFriendshipsPair join useFriendshipsRevPair keys
       // print for test
-      val printTemp6 : String = useFriendshipsAll.collect.map { case (u1, u2 ) => "User1 : " + u1 + "\tUser2 : " + u2} mkString ("\n")
-      println(printTemp6)
+//      val printTemp6 : String = useFriendshipsAll.collect.map { case (u1, u2 ) => "User1 : " + u1 + "\tUser2 : " + u2} mkString ("\n")
+//      println(printTemp6)
 
       /** making into graph */
       val friendships : Array[(Long, Long)] = useFriendshipsAll.collect()
@@ -120,28 +121,29 @@ object Query2 {
           val graph1 : Set[Long] = vertex find (_.contains(e._1)) get
           val graph2 : Set[Long] = vertex find (_.contains(e._2)) get
 
-          println (e._1 + " : " + graph1)
-          println (e._2 + " : " + graph2)
+//          println (e._1 + " : " + graph1)
+//          println (e._2 + " : " + graph2)
 
           if (graph1 == graph2) {
-            println("Remain Same")
-            println(vertex + "\n")
+//            println("Remain Same")
+//            println(vertex + "\n")
             graphRec(vertex, edges.tail)
           }
           else {
             val rmGraph = vertex - graph1 - graph2
             val mkGraph = rmGraph + (graph1 union graph2)
-            println(mkGraph + "\n")
+//            println(mkGraph + "\n")
 
             graphRec(mkGraph, edges.tail)
           }
         }
       }
+
       val refinedType : RDD[(Long, (Set[Set[Long]], List[(Long, Long)]))] =
         commentLikeFriendship mapValues {case(v, e) => (v.map(_.toSet).toSet, e.toList) }
-
       val graph       : Array[(Long, Set[Set[Long]])] = (refinedType collect) map {case(c, (v, e)) => (c,graphRec(v, e))}
 
+      /** calculate the max size of graph */
       val graphSize   : Array[(Long, Int)] = graph map {
         case (c, vs) =>
           val sizes = vs.map(_.size)
@@ -149,7 +151,20 @@ object Query2 {
             if (sizes isEmpty) 0 else sizes.max
           (c, maxSize)
       }
-      graphSize foreach (println)
+      val graphSizeSorted : RDD[(Long, Int)] = sc.parallelize(graphSize) sortBy (_._2, false)
+      val extractedTop : Array[(Long, Int)] =
+        if( graphSizeSorted.count() > k) graphSizeSorted.take(k)
+        else graphSizeSorted.collect()
+      extractedTop foreach (println)
+
+      /** write to file */
+      val resultFile : String = extractedTop.map {
+        case (cID, size) => "Comment : " + cID + "\tSize : " + size
+      } mkString "\n"
+
+      val pw = new PrintWriter(new File("src/main/scala/query2Out/" + i + ".dat" /*"/home/ana/data/query2Out/" + i + ".dat"*/ ))
+      pw.write(resultFile )
+      pw.close
 
       // print for test
 //      val printTemp4  : String = graphSize map { case (c, s) => "Comment : " + c + "\tSize : " + s} mkString ("\n")
