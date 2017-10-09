@@ -9,22 +9,22 @@ import RDDdataTypes.{CommentInfo, FriendshipInfo, LikeInfo, PostInfo}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 
-
 object Query2 {
-  //val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
-  val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
-  val sc: SparkContext = new SparkContext(conf)
 
-  val timing = new StringBuffer
-  def timed[T](label: String, code: => T): T = {
-    val start = System.currentTimeMillis()
-    val result = code
-    val stop = System.currentTimeMillis()
-    timing.append(s"Processing $label took ${stop - start} ms.\n")
-    result
-  }
+  def q2(args: Array[String]) {
+    val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
+    //val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
+    val sc: SparkContext = new SparkContext(conf)
 
-  def main(args: Array[String]) {
+    val timing = new StringBuffer
+    def timed[T](label: String, code: => T): T = {
+      val start = System.currentTimeMillis()
+      val result = code
+      val stop = System.currentTimeMillis()
+      timing.append(s"Processing $label took ${stop - start} ms.\n")
+      result
+    }
+
     val df : DateFormat = new SimpleDateFormat("yyyy-MM-DD'T'HH:mm:ss.SSSSSX")
     val date : Date = df.parse("2010-01-01T03:00:00.000+0000") // 12시 정오임
 
@@ -52,7 +52,7 @@ object Query2 {
       * @param daysTimestamp   - all of timestamps
       */
     def main_recur(i : Int, k: Int, d: Int, Friendships : RDD[(Long, Long)], daysTimestamp : List[dataTypes.Timestamp] ) {
-      if (i > 20) return
+      if (i > 178) return
 
       /** RDD read from file */
       val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
@@ -63,9 +63,9 @@ object Query2 {
 //      val LikesRDD: RDD[LikeInfo] = sc.textFile("src/main/scala/SampleData/likesSample.dat").map(LikesData.parse)
 
       // print test
-      println("현재 날짜    : " + currentDate.toString)
-      val printTemp: String = (daysTimestamp map (x => x.toString)).mkString(" ")
-      println("timestamps : " + printTemp)
+//      println("현재 날짜    : " + currentDate.toString)
+//      val printTemp: String = (daysTimestamp map (x => x.toString)).mkString(" ")
+//      println("timestamps : " + printTemp)
 
       /** Comments */
       val newCommentsPair       : RDD[(Long, Long)] = CommentsRDD.map(c=> (c.comment_id, c.comment_id))
@@ -159,10 +159,19 @@ object Query2 {
 
       /** write to file */
       val resultFile : String = extractedTop.map {
-        case (cID, size) => "Comment : " + cID + "\tSize : " + size
+        case (cID, size) =>
+          val comment : CommentInfo = CommentsRDD.filter{c => c.comment_id == cID} . first()
+          val (vertex, edge) : (Set[Set[Long]], List[(Long, Long)]) = refinedType.lookup(cID).head
+
+          val size_ = "Size : " + size + "\n"
+          val comm_ = comment + "\n"
+          val vert_ = "(name, group) :\n" + ((vertex zip (1 to vertex.size)) mkString " ") + "\n"
+          val edge_ = "(source, target) : \n" + (edge mkString " ") + "\n"
+          size_ + comm_ + vert_ + edge_
       } mkString "\n"
 
-      val pw = new PrintWriter(new File("src/main/scala/query2Out/" + i + ".dat" /*"/home/ana/data/query2Out/" + i + ".dat"*/ ))
+      val pw = new PrintWriter(new File("/home/ana/data/query2Out/" + i + ".dat" ))
+      //val pw = new PrintWriter(new File("src/main/scala/query2Out/" + i + ".dat" ))
       pw.write(resultFile )
       pw.close
 

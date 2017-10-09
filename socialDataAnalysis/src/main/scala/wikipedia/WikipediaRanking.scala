@@ -11,8 +11,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 object WikipediaRanking {
-  val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
-  //val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
+/*
+  //val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
+  val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
   val sc: SparkContext = new SparkContext(conf)
 
   val timing = new StringBuffer
@@ -23,8 +24,14 @@ object WikipediaRanking {
     timing.append(s"Processing $label took ${stop - start} ms.\n")
     result
   }
+*/
 
   def main(args: Array[String]) {
+
+    Query2.q2(args)
+
+    /*
+
     val df : DateFormat = new SimpleDateFormat("yyyy-MM-DD'T'HH:mm:ss.SSSSSX")
     val date : Date = df.parse("2010-01-01T03:00:00.000+0000") // 12시 정오임
 
@@ -181,6 +188,6 @@ object WikipediaRanking {
     }
 
     println(timing)
-    sc.stop()
+    sc.stop()*/
   }
 }
