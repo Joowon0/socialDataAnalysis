@@ -32,14 +32,13 @@ object WikipediaRanking {
 
     var i = 0
     /** Don't know why start at Jan 01 */
-    while (i < 10) {
+    while (i < 30) {
       i = i + 1
       val date: Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24)
       currentDate = new Timestamp(date.getTime())
     }
     val date2: Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 36)
     currentDate = new Timestamp(date2.getTime())
-    //new dataTypes.Timestamp(date2) +=: daysTimestamp // realTime.timestamp defined here
 
     /** calling recursive function */
     main_recur(1, sc.emptyRDD, Map(), List(new dataTypes.Timestamp(date2)))
@@ -54,10 +53,6 @@ object WikipediaRanking {
       if (i > 10) return
 
       /** RDD read from file */
-//      val CommentsRDD: RDD[CommentInfo] = sc.textFile("src/main/scala/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
-//      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("src/main/scala/data_day/friendships/friendships" + i + ".dat").map(FriendshipsData.parse)
-//      val LikesRDD: RDD[LikeInfo] = sc.textFile("src/main/scala/data_day/likes/likes" + i + ".dat").map(LikesData.parse)
-//      val PostsRDD: RDD[PostInfo] = sc.textFile("src/main/scala/data_day/posts/posts" + i + ".dat").map(PostsData.parse)
       val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
       val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/data_day/friendships/friendships" + i + ".dat").map(FriendshipsData.parse)
       val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/data_day/likes/likes" + i + ".dat").map(LikesData.parse)
@@ -162,8 +157,9 @@ object WikipediaRanking {
 
       /** filter posts that is under 0 */
       val filteredPosts = decreasedPostComment.filter(p => scores(p) > 0)
+      val filteredTS = daysTimestamp filter (ts => (ts.score > 0))
 
-      main_recur( i+1, filteredPosts, allConnection, new dataTypes.Timestamp(date) :: daysTimestamp)
+      main_recur( i+1, filteredPosts, allConnection, new dataTypes.Timestamp(date) :: filteredTS)
     }
 
     println(timing)
