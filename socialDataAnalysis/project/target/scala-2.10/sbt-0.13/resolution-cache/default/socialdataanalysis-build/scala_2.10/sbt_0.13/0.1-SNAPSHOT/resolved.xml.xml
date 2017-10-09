@@ -4,7 +4,7 @@
 		module="socialdataanalysis-build"
 		revision="0.1-SNAPSHOT"
 		status="integration"
-		publication="20170912055753"
+		publication="20171009141343"
 		e:sbtVersion="0.13" e:scalaVersion="2.10"
 	>
 		<description>

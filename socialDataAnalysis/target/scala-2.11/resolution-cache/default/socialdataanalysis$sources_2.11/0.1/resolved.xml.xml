@@ -4,7 +4,7 @@
 		module="socialdataanalysis$sources_2.11"
 		revision="0.1"
 		status="integration"
-		publication="20170912055837"
+		publication="20171009141426"
 	/>
 	<configurations>
 		<conf name="compile" visibility="public" description=""/>

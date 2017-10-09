@@ -8,7 +8,68 @@ import RDDdataTypes.{CommentInfo, FriendshipInfo, LikeInfo, PostInfo}
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-//import dataTypes._
+
+case class CommentInfo(timestamp : Timestamp, comment_id : Long, user_id : Long,
+                       comment : String, user : String,
+                       comment_replied : Long, post_commented : Long) {
+  var score = 10
+  def getScore() : Int = score
+
+  def decrease(): Unit = {
+    score = score - 1
+  }
+
+  override def toString: String = {
+    val front =
+      score + "|" +
+        timestamp + "|" +
+        comment_id + "|" +
+        user_id + "|"
+    val middle =
+      if (comment != 0)
+        comment + "|" + user + "|"
+      else
+        "|"+ user + "|"
+    val back =
+      if (comment_replied != 0)
+        comment_replied + "|"
+      else
+        "|" + post_commented
+
+    front + middle + back
+  }
+}
+
+case class PostInfo(timestamp : Timestamp, post_id : Long,
+                    user_id : Long, post : String, user : String) {
+  var score = 10
+  def getScore() : Int = score
+
+  def decrease(): Unit = {
+    score = score -1
+  }
+
+  override def toString: String = {
+    val front =
+      score + "|" +
+        timestamp + "|" +
+        post_id + "|" +
+        user_id + "|"
+
+    val back =
+      if (post != 0)
+        post + "|" + user
+      else
+        "|" + user
+
+    front + back
+  }
+}
+
+case class LikeInfo(timestamp : Timestamp, user_id : Long, comment_id : Long) {}
+
+case class FriendshipInfo(timestamp : Timestamp, user_id_1 : Long,
+                          user_id_2 : Long) {}
 
 object WikipediaRanking {
   //val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
@@ -33,7 +94,7 @@ object WikipediaRanking {
 
     var i = 0
     /** Don't know why start at Jan 01 */
-    while (i < 29) {
+    while (i < 10) {
       i = i + 1
       val date: Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24)
       currentDate = new Timestamp(date.getTime())
@@ -55,14 +116,14 @@ object WikipediaRanking {
       if (i > 10) return
 
       /** RDD read from file */
-      val CommentsRDD: RDD[CommentInfo] = sc.textFile("src/main/scala/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
-      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("src/main/scala/data_day/friendships/friendships" + i + ".dat").map(FriendshipsData.parse)
-      val LikesRDD: RDD[LikeInfo] = sc.textFile("src/main/scala/data_day/likes/likes" + i + ".dat").map(LikesData.parse)
-      val PostsRDD: RDD[PostInfo] = sc.textFile("src/main/scala/data_day/posts/posts" + i + ".dat").map(PostsData.parse)
-//      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/comments" + i + ".dat").map(CommentsData.parse)
-//      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/friendships" + i + ".dat").map(FriendshipsData.parse)
-//      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/likes" + i + ".dat").map(LikesData.parse)
-//      val PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/posts" + i + ".dat").map(PostsData.parse)
+//      val CommentsRDD: RDD[CommentInfo] = sc.textFile("src/main/scala/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
+//      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("src/main/scala/data_day/friendships/friendships" + i + ".dat").map(FriendshipsData.parse)
+//      val LikesRDD: RDD[LikeInfo] = sc.textFile("src/main/scala/data_day/likes/likes" + i + ".dat").map(LikesData.parse)
+//      val PostsRDD: RDD[PostInfo] = sc.textFile("src/main/scala/data_day/posts/posts" + i + ".dat").map(PostsData.parse)
+      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
+      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/data_day/friendships/friendships" + i + ".dat").map(FriendshipsData.parse)
+      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/data_day/likes/likes" + i + ".dat").map(LikesData.parse)
+      val PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/data_day/posts/posts" + i + ".dat").map(PostsData.parse)
 
       // print test
       println("현재 날짜    : " + currentDate.toString)
