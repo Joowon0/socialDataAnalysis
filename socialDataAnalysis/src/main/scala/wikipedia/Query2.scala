@@ -52,12 +52,12 @@ object Query2 {
       * @param daysTimestamp   - all of timestamps
       */
     def main_recur(i : Int, k: Int, d: Int, Friendships : RDD[(Long, Long)], daysTimestamp : List[dataTypes.Timestamp] ) {
-      if (i > 178) return
+      if (i > 993) return
 
       /** RDD read from file */
-      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
-      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/data_day/friendships/friendships" + i + ".dat").map(FriendshipsData.parse)
-      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/data_day/likes/likes" + i + ".dat").map(LikesData.parse)
+      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/data_day_big/comments/comments" + i + ".dat").map(CommentsData.parse)
+      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/data_day_big/friendships/friendships" + i + ".dat").map(FriendshipsData.parse)
+      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/data_day_big/likes/likes" + i + ".dat").map(LikesData.parse)
 //      val CommentsRDD: RDD[CommentInfo] = sc.textFile("src/main/scala/SampleData/commentsSample.dat").map(CommentsData.parse)
 //      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("src/main/scala/SampleData/friendshipsSample.dat").map(FriendshipsData.parse)
 //      val LikesRDD: RDD[LikeInfo] = sc.textFile("src/main/scala/SampleData/likesSample.dat").map(LikesData.parse)
@@ -155,7 +155,7 @@ object Query2 {
       val extractedTop : Array[(Long, Int)] =
         if( graphSizeSorted.count() > k) graphSizeSorted.take(k)
         else graphSizeSorted.collect()
-      extractedTop foreach (println)
+      //extractedTop foreach (println)
 
       /** write to file */
       val resultFile : String = extractedTop.map {

@@ -1,3 +1,4 @@
 compile
 run
 :q
+run -features
