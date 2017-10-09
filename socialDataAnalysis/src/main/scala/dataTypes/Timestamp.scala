@@ -1,7 +1,7 @@
 package dataTypes
 
 import java.util.Date
-import libFromCoursera.Var
+//import libFromCoursera.Var
 
 // use method Date(int year, int month, int date) for new Date
 class Timestamp(timestamp: Date) extends java.io.Serializable {
