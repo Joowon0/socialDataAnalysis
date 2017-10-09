@@ -8,7 +8,7 @@ import RDDdataTypes.{CommentInfo, FriendshipInfo, LikeInfo, PostInfo}
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import dataTypes._
+//import dataTypes._
 
 object WikipediaRanking {
   //val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
@@ -46,13 +46,13 @@ object WikipediaRanking {
     main_recur(1, sc.emptyRDD, Map(), List(new dataTypes.Timestamp(date2)))
 
     /**
-      * @param i              - count the number of recursion
-      * @param Posts          - Structures to store all Posts
+      * @param i             - count the number of recursion
+      * @param Posts         - Structures to store all Posts
       * @param connectedPost - given a comment ID, able to find corresponding posts
       * @param daysTimestamp - all of timestamps
       */
-    def main_recur(i : Int, Posts : RDD[(Post, Set[Comment])], connectedPost : Map[Long, Long], daysTimestamp : List[dataTypes.Timestamp]) {
-      if (i > 20) return
+    def main_recur(i : Int, Posts : RDD[(PostInfo, Set[CommentInfo])], connectedPost : Map[Long, Long], daysTimestamp : List[dataTypes.Timestamp]) {
+      if (i > 10) return
 
       /** RDD read from file */
       val CommentsRDD: RDD[CommentInfo] = sc.textFile("src/main/scala/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
@@ -72,9 +72,6 @@ object WikipediaRanking {
       /** connect comments to according posts (sequential part) */
       val commentTemp = CommentsRDD.collect()
       val commentSize = commentTemp.length
-//      println("comment num : " + commentSize)
-//      commentTemp.foreach(println)
-
 
       def connect(connection : Map[Long, Long], index : Int): Map[Long, Long] = {
         if (index >= commentSize) connection
@@ -92,22 +89,22 @@ object WikipediaRanking {
       val commentPost: RDD[(Long, Long)] = sc.parallelize(allConnection.toSeq)
 
       /** refine posts RDD */
-      val oldPosts: RDD[(Long, Post)] = Posts.keys.map { p => (p.PostID, p) }
-      val newPosts: RDD[(Long, Post)] = PostsRDD.map { p => (p.post_id, new Post(p.post_id, daysTimestamp.head)) }
-      val allPosts: RDD[(Long, Post)] = oldPosts union newPosts
+      val oldPosts: RDD[(Long, PostInfo)] = Posts.keys.map { p => (p.post_id, p) }
+      val newPosts: RDD[(Long, PostInfo)] = PostsRDD.map { p => (p.post_id, p) }
+      val allPosts: RDD[(Long, PostInfo)] = oldPosts union newPosts
 
       /** refine comments RDD */
-      val newRefinedComments: RDD[Comment] = CommentsRDD.map(c => new Comment(c.comment_id, daysTimestamp.head, c.timestamp))
-      val newComments: RDD[(Long, Comment)] = newRefinedComments.map { c => (c.commentID, c) }
+      //val newRefinedComments: RDD[CommentInfo] = CommentsRDD.map(c => new Comment(c.comment_id, daysTimestamp.head))
+      val newComments: RDD[(Long, CommentInfo)] = CommentsRDD.map { c => (c.comment_id, c) }
 
       /** extract posts and according comments */
-      val newPostIDComment: RDD[(Long, Iterable[Comment])] = commentPost.join(newComments).values.groupByKey()
-      val newPostComment: RDD[(Post, Option[Iterable[Comment]])] = allPosts.leftOuterJoin(newPostIDComment).values
-      val newRefinedPostComment: RDD[(Post, Set[Comment])] = newPostComment.map { case (p, iter) => (p, iter.toSet.flatten) }
-      val allPostComment: RDD[(Post, Set[Comment] )] = Posts union newRefinedPostComment
-      val groupAllPostComment: RDD[(Post, Set[Comment])] = {
-        val group =  allPostComment.groupBy { case (post, value) => post.PostID }.values
-        val refine: RDD[(Post, Set[Comment])] =
+      val newPostIDComment: RDD[(Long, Iterable[CommentInfo])] = commentPost.join(newComments).values.groupByKey()
+      val newPostComment: RDD[(PostInfo, Option[Iterable[CommentInfo]])] = allPosts.leftOuterJoin(newPostIDComment).values
+      val newRefinedPostComment: RDD[(PostInfo, Set[CommentInfo])] = newPostComment.map { case (p, iter) => (p, iter.toSet.flatten) }
+      val allPostComment: RDD[(PostInfo, Set[CommentInfo] )] = Posts union newRefinedPostComment
+      val groupAllPostComment: RDD[(PostInfo, Set[CommentInfo])] = {
+        val group =  allPostComment.groupBy { case (post, value) => post.post_id }.values
+        val refine: RDD[(PostInfo, Set[CommentInfo])] =
           group.map {
             case set =>
               val comments = set.flatMap { case (post, eachSet) => eachSet }
@@ -118,9 +115,9 @@ object WikipediaRanking {
 
       /** function that calculate scores */
       val scores =
-        (post2Comment: (Post, Set[Comment])) => {
+        (post2Comment: (PostInfo, Set[CommentInfo])) => {
           def addScore =
-            (score: Int, comment: Comment) => comment.getScore() + score
+            (score: Int, comment: CommentInfo) => comment.getScore() + score
 
           post2Comment match {
             case (post, comments) => {
@@ -133,13 +130,12 @@ object WikipediaRanking {
         }
       //val scoreUpdate = allPostComment.map{ case(post, comments) => post.getScore}
       /** get max */
-      val sorted: RDD[(Int, (Post, Set[Comment]))] = groupAllPostComment.map(rdd => (scores(rdd), rdd)).sortByKey()
+      val sorted: RDD[(Int, (PostInfo, Set[CommentInfo]))] = groupAllPostComment.map(rdd => (scores(rdd), rdd)).sortByKey(false)
       sorted.map {
-        case (s, (p, c)) => "Score : " + s + "\nPost : " + p + "Comment : " + c + "\n"
-      }.collect().foreach(println)
-      //val extractedTop3 : Array[(Int, (Post, Option[Iterable[Comment]]))] = sorted.take(3)
-      //val top3 : Array[Post] = extractedTop3 map{ case( score, (post, comments)) => post}
-
+        case (s, (p, c)) => "Score : " + s + "\n" + p + "\n" + (c mkString "\n") + "\n"
+      } .collect().foreach(println)
+      val extractedTop3 : Array[(Int, (PostInfo, Set[CommentInfo]))] = sorted.take(3)
+      val top3 : Array[PostInfo] = extractedTop3 map{ case( score, (post, comments)) => post}
 
       /** calculate */
       //val printTemp3: String = top3 map {p => p.PostID} mkString (" ")
@@ -153,12 +149,16 @@ object WikipediaRanking {
       currentDate = new Timestamp(date.getTime())
       daysTimestamp map (_.decrease()) // decrease the scores of the old dates
 
-      val decreasedPostComment: RDD[(Post, Set[Comment])] =
+      val decreasedPostComment: RDD[(PostInfo, Set[CommentInfo])] =
         groupAllPostComment.map {
           case (post, comments) =>
             post.decrease()
-            comments.map{ case c => c.decrease()}
-            (post, comments)
+            val newComments = comments.map{
+              case c =>
+                c.decrease()
+                c
+            }
+            (post, newComments)
         }
 
       /** filter posts that is under 0 */
