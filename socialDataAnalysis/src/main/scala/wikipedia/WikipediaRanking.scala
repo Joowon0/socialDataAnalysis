@@ -10,10 +10,9 @@ import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-
 object WikipediaRanking {
-  //val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
-  val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
+  val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
+  //val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
   val sc: SparkContext = new SparkContext(conf)
 
   val timing = new StringBuffer
@@ -43,16 +42,16 @@ object WikipediaRanking {
     currentDate = new Timestamp(date2.getTime())
 
     /** calling recursive function */
-    main_recur(1, sc.emptyRDD, Map(), List(new dataTypes.Timestamp(date2)))
+    main_recur(1, sc.emptyRDD, Map()/*, List(new dataTypes.Timestamp(date2))*/)
 
     /**
       * @param i             - count the number of recursion
       * @param Posts         - Structures to store all Posts
       * @param connectedPost - given a comment ID, able to find corresponding posts
-      * @param daysTimestamp - all of timestamps
+      * //@param daysTimestamp - all of timestamps
       */
-    def main_recur(i : Int, Posts : RDD[(PostInfo, Set[CommentInfo])], connectedPost : Map[Long, Long], daysTimestamp : List[dataTypes.Timestamp]) {
-      if (i > 10) return
+    def main_recur(i : Int, Posts : RDD[(PostInfo, Set[CommentInfo])], connectedPost : Map[Long, Long]/*, daysTimestamp : List[dataTypes.Timestamp]*/) {
+      if (i > 179) return
 
       /** RDD read from file */
       val PostsRDD: RDD[PostInfo] = sc.textFile("/home/ana/data/data_day/posts/posts" + i + ".dat").map(PostsData.parse)
@@ -127,27 +126,32 @@ object WikipediaRanking {
 
       /** get max */
       val sorted: RDD[(Int, (PostInfo, Set[CommentInfo]))] = groupAllPostComment.map(rdd => (scores(rdd), rdd)).sortByKey(false)
-//      sorted.map {
-//        case (s, (p, c)) => "Score : " + s + "\n" + p + "\n" + (c mkString "\n") + "\n"
-//      } .collect().foreach(println)
-      val extractedTop3 : Array[(Int, (PostInfo, Set[CommentInfo]))] = sorted.take(3)
-      val result =
-        extractedTop3.map {
+      val extractedTop3 : Array[(Int, (PostInfo, Set[CommentInfo]))] =
+        if( sorted.count () > 3) sorted.take(3)
+        else sorted.collect()
+
+      // print for test
+//      val resultPrint = extractedTop3.map {
+//        case (s, (p, c)) => "Score : " + s + "\n" + p + "\n" + (c mkString "\n")
+//      } . foreach(println)
+
+      /** write to file */
+      val resultFile : String = extractedTop3.map {
         case (s, (p, c)) => "Score : " + s + "\n" + p + "\n" + (c mkString "\n")
-      } /*mkString "\n"*/. foreach(println)
+      } mkString "\n"
 
-      //result saveAsTextFile
-//      val pw = new PrintWriter(new File("/home/ana/data/query1Out/" + i + ".dat" ))
-//      pw.write(result )
-//      pw.close
+      val pw = new PrintWriter(new File("/home/ana/data/query1Out/" + i + ".dat" ))
+      pw.write(resultFile )
+      pw.close
 
-      println()
-
+      //println()
+/*
 
       /** processes regards to date */
       val date: Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24) // 하루 지남
       currentDate = new Timestamp(date.getTime())
       daysTimestamp map (_.decrease()) // decrease the scores of the old dates
+*/
 
       val decreasedPostComment: RDD[(PostInfo, Set[CommentInfo])] =
         groupAllPostComment.map {
@@ -163,14 +167,17 @@ object WikipediaRanking {
 
       /** filter posts and timestamp that is under 0 */
       val filteredPosts: RDD[(PostInfo, Set[CommentInfo])] = decreasedPostComment.filter(p => scores(p) > 0)
-      val filteredTS = daysTimestamp filter (ts => (ts.score > 0))
+//      val filteredTS = daysTimestamp filter (ts => (ts.score > 0))
 
       val filteredCommentID : RDD[Long] = filteredPosts flatMap { case (p, cs) => cs map (_.comment_id)}
       val filteredConnection : RDD[(Long, Long)] =
         (filteredCommentID map {c => (c, c)}) join sc.parallelize(allConnection.toSeq) values
       val filteredConnectionToMap = filteredConnection.collect().toMap
 
-      main_recur( i+1, filteredPosts, filteredConnectionToMap, new dataTypes.Timestamp(date) :: filteredTS)
+      /** 야매 */
+      //val filteredPosts2: RDD[(PostInfo, Set[CommentInfo])] = sc.parallelize(extractedTop3.toSeq) values
+
+      main_recur( i+1, filteredPosts, filteredConnectionToMap/*, new dataTypes.Timestamp(date) :: filteredTS*/)
     }
 
     println(timing)
