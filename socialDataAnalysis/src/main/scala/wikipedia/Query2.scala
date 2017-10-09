@@ -51,7 +51,7 @@ object Query2 {
       * @param daysTimestamp   - all of timestamps
       */
     def main_recur(i : Int, k: Int, d: Int, Friendships : RDD[(Long, Long)], daysTimestamp : List[dataTypes.Timestamp] ) {
-      if (i > 10) return
+      if (i > 100) return
 
       /** RDD read from file */
       val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/data_day/comments/comments" + i + ".dat").map(CommentsData.parse)
@@ -80,25 +80,30 @@ object Query2 {
       /** users that liked to new comments */
       val allUsers     : RDD[Long] = likesCommentUser map (_._2) distinct
       val allUsersPair : RDD[(Long, Long)] = allUsers map (u => (u,u))
+      // print for test
+      println("All Users :")
+      println(allUsers collect() mkString " ")
 
       // print for test
-//      val printTemp1 : String = allUsers.collect.map { case (u) => "User " + u } mkString ("\n")
-//      println(printTemp1)
-//      val printTemp2 : String = likesCommentUserNil.collect.map {  case (c, us) => "Comment " + c + " : " + us.map(f => "user" + f + ", ")} mkString ("\n")
-//      println(printTemp2)
+      val printTemp1 : String = allUsers.collect.map { case (u) => "User " + u } mkString ("\n")
+      println(printTemp1)
+      val printTemp2 : String = likesCommentUserNil.collect.map {  case (c, us) => "Comment " + c + " : " + us.map(f => "user" + f + ", ")} mkString ("\n")
+      println(printTemp2)
 
       /** combine old and new friendships  */
       val newFriendships    : RDD[(Long, Long)] = FriendshipsRDD.map(f => (f.user_id_1, f.user_id_2))
       val allFriendships    : RDD[(Long, Long)] = Friendships union newFriendships
-      val allFriendshipsRev : RDD[(Long, Long)] = allFriendships map {case (u1, u2) => (u2, u1)}
+      //val allFriendshipsRev : RDD[(Long, Long)] = allFriendships map {case (u1, u2) => (u2, u1)}
 
       /** filter out unnecessary */
       val useFriendships    : RDD[(Long, Long)] = allFriendships join allUsersPair values
-      val useFriendshipsRev : RDD[(Long, Long)] = allFriendshipsRev join allUsersPair values
-      val useFriendshipsAll : RDD[(Long, Long)] = useFriendships union (useFriendshipsRev map {case (u1, u2) => (u2, u1)}) distinct
+      val useFriendshipsRev : RDD[(Long, Long)] = allUsersPair join allFriendships values
+      val useFriendshipsPair : RDD[((Long, Long), (Long, Long))] = useFriendships map (c => (c,c))
+      val useFriendshipsRevPair : RDD[((Long, Long), (Long, Long))] = useFriendshipsRev map (c => (c,c))
+      val useFriendshipsAll : RDD[(Long, Long)] = useFriendshipsPair join useFriendshipsRevPair keys
       // print for test
-//      val printTemp6 : String = useFriendshipsAll.collect.map { case (u1, u2 ) => "User1 : " + u1 + "\tUser2 : " + u2} mkString ("\n")
-//      println(printTemp6)
+      val printTemp6 : String = useFriendshipsAll.collect.map { case (u1, u2 ) => "User1 : " + u1 + "\tUser2 : " + u2} mkString ("\n")
+      println(printTemp6)
 
       /** making into graph */
       val friendships : Array[(Long, Long)] = useFriendshipsAll.collect()
@@ -115,11 +120,18 @@ object Query2 {
           val graph1 : Set[Long] = vertex find (_.contains(e._1)) get
           val graph2 : Set[Long] = vertex find (_.contains(e._2)) get
 
-          if (graph1 == graph2)
+          println (e._1 + " : " + graph1)
+          println (e._2 + " : " + graph2)
+
+          if (graph1 == graph2) {
+            println("Remain Same")
+            println(vertex + "\n")
             graphRec(vertex, edges.tail)
+          }
           else {
             val rmGraph = vertex - graph1 - graph2
             val mkGraph = rmGraph + (graph1 union graph2)
+            println(mkGraph + "\n")
 
             graphRec(mkGraph, edges.tail)
           }
