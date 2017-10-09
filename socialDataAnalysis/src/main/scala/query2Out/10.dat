@@ -1,0 +1,34 @@
+Size : 5
+10|2010-04-28 00:38:07.398|8591277815|4577|About Augustin. About Bertolt . About Plutarch. About Mohandas. About Alfred, . About .|Hao Zhang|8591277813|
+(name, group) :
+(Set(1949),1) (Set(465),2) (Set(4528, 4577, 4688, 3748, 3924),3)
+(source, target) : 
+(4688,4528) (4688,4577) (4528,3748) (4577,3924) (4577,3748) (3924,3748) (4688,3924) (4577,4528) (4528,3924)
+
+Size : 3
+10|2010-04-24 05:32:48.96|8591206920|3039|About Hector Berlioz, fantastique and . About Robert Plant, album produced by.|Li Wang|8591206916|
+(name, group) :
+(Set(1099511630415, 1099511630379, 1099511629672),1)
+(source, target) : 
+(1099511630415,1099511630379) (1099511630415,1099511629672)
+
+Size : 1
+10|2010-04-25 09:49:02.915|8590101848|985|About Augustine of Hip. About John Locke, thin. About Al Green, In 200. About Almoravid dy.|Wei Liu|8590101846|
+(name, group) :
+(Set(2285),1)
+(source, target) : 
+
+
+Size : 1
+10|2010-05-01 08:27:37.29|8590220163|687|About Carl Gustaf Emil Mannerheim, the 17th. About Billie Holiday, 1933–1959Labels Brun.|Jie Zhang||8590219868
+(name, group) :
+(Set(3764),1) (Set(1099511628571),2)
+(source, target) : 
+
+
+Size : 1
+10|2010-04-30 02:44:04.212|8590246794|238|About Japan, and an elected parliament called the Diet. A major economic power, Ja.|Burak Koksal||8590246326
+(name, group) :
+(Set(3755),1) (Set(4273),2)
+(source, target) : 
+

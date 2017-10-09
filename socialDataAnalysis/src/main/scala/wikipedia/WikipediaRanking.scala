@@ -1,7 +1,5 @@
 package wikipedia
 
-
-
 object WikipediaRanking {
   def main(args: Array[String]) {
 

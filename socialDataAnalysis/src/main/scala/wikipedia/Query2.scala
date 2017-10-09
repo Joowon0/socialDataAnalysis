@@ -12,7 +12,7 @@ import org.apache.spark.rdd.RDD
 object Query2 {
 
   def q2(args: Array[String]) {
-    //val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
+//    val conf: SparkConf = new SparkConf().setMaster("spark://192.168.0.195:7077").setAppName("twitterAnalysis")
     val conf: SparkConf = new SparkConf().setMaster("local").setAppName("twitterAnalysis")
     val sc: SparkContext = new SparkContext(conf)
 
@@ -52,20 +52,20 @@ object Query2 {
       * @param daysTimestamp   - all of timestamps
       */
     def main_recur(i : Int, k: Int, d: Int, Friendships : RDD[(Long, Long)], daysTimestamp : List[dataTypes.Timestamp] ) {
-      if (i > 5) return
+      if (i > 35) return
 
       /** RDD read from file */
-      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/data_day_big/comments/comments" + i + ".dat").map(CommentsData.parse)
-      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/data_day_big/friendships/friendships" + i + ".dat").map(FriendshipsData.parse)
-      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/data_day_big/likes/likes" + i + ".dat").map(LikesData.parse)
+      val CommentsRDD: RDD[CommentInfo] = sc.textFile("/home/ana/data/data_day_big10/comments/comments" + i + ".dat").map(CommentsData.parse)
+      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("/home/ana/data/data_day_big10/friendships/friendships" + i + ".dat").map(FriendshipsData.parse)
+      val LikesRDD: RDD[LikeInfo] = sc.textFile("/home/ana/data/data_day_big10/likes/likes" + i + ".dat").map(LikesData.parse)
 //      val CommentsRDD: RDD[CommentInfo] = sc.textFile("src/main/scala/SampleData/commentsSample.dat").map(CommentsData.parse)
 //      val FriendshipsRDD: RDD[FriendshipInfo] = sc.textFile("src/main/scala/SampleData/friendshipsSample.dat").map(FriendshipsData.parse)
 //      val LikesRDD: RDD[LikeInfo] = sc.textFile("src/main/scala/SampleData/likesSample.dat").map(LikesData.parse)
 
       // print test
-      println("현재 날짜    : " + currentDate.toString)
-      val printTemp: String = (daysTimestamp map (x => x.toString)).mkString(" ")
-      println("timestamps : " + printTemp)
+//      println("현재 날짜    : " + currentDate.toString)
+//      val printTemp: String = (daysTimestamp map (x => x.toString)).mkString(" ")
+//      println("timestamps : " + printTemp)
 
 
       /** Comments */
@@ -131,37 +131,37 @@ object Query2 {
 
       val initialGraph : RDD[(Long, Iterable[Iterable[Long]])] = likesCommentUserNil mapValues (u => u map (Iterable(_)))
       val commentLikeFriendship : RDD[(Long, (Iterable[Iterable[Long]], Iterable[(Long, Long)]))] = initialGraph join commentFriendships
-      println("initial graph")
-      val printTemp10 :String = initialGraph.collect.map{
-        case(cid, initial) => "Comment : " + cid + "\tUser : " + initial.map(_.toString)} mkString ("\n")
-      println(printTemp10)
+//      println("initial graph")
+//      val printTemp10 :String = initialGraph.collect.map{
+//        case(cid, initial) => "Comment : " + cid + "\tUser : " + initial.map(_.toString)} mkString ("\n")
+//      println(printTemp10)
 
-      println("connections")
-      val printTemp11 : String = commentFriendships.collect.map{
-        case(cid, fr) => "Comment : " + cid + "\tFri : " + fr.map(_.toString()) } mkString ("\n")
-      println(printTemp11)
+//      println("connections")
+//      val printTemp11 : String = commentFriendships.collect.map{
+//        case(cid, fr) => "Comment : " + cid + "\tFri : " + fr.map(_.toString()) } mkString ("\n")
+//      println(printTemp11)
 
       def graphRec (vertex : Set[Set[Long]], edges : Iterable[(Long, Long)]): Set[Set[Long]] = {
         if (edges isEmpty) vertex
         else {
           val e = edges.head
 
-          println(vertex)
+//          println(vertex)
           val graph1 : Set[Long] = vertex find (_.contains(e._1)) get
           val graph2 : Set[Long] = vertex find (_.contains(e._2)) get
 
-          println (e._1 + " : " + graph1)
-          println (e._2 + " : " + graph2)
+//          println (e._1 + " : " + graph1)
+//          println (e._2 + " : " + graph2)
 
           if (graph1 == graph2) {
-            println("Remain Same")
-            println(vertex + "\n")
+//            println("Remain Same")
+//            println(vertex + "\n")
             graphRec(vertex, edges.tail)
           }
           else {
             val rmGraph = vertex - graph1 - graph2
             val mkGraph = rmGraph + (graph1 union graph2)
-            println(mkGraph + "\n")
+//            println(mkGraph + "\n")
 
             graphRec(mkGraph, edges.tail)
           }
@@ -193,10 +193,12 @@ object Query2 {
       //extractedTop foreach (println)
 
       /** write to file */
+      val mapGraph : Map[Long, Set[Set[Long]]] = graph.toMap
       val resultFile : String = extractedTop.map {
         case (cID, size) =>
           val comment : CommentInfo = CommentsRDD.filter{c => c.comment_id == cID} . first()
-          val (vertex, edge) : (Set[Set[Long]], List[(Long, Long)]) = refinedType.lookup(cID).head
+          val vertex : Set[Set[Long]] = mapGraph(cID)
+          val edge : Iterable[(Long, Long)] =commentFriendships.lookup(cID).head
 
           val size_ = "Size : " + size + "\n"
           val comm_ = comment + "\n"
@@ -205,14 +207,14 @@ object Query2 {
           size_ + comm_ + vert_ + edge_
       } mkString "\n"
 
-      //val pw = new PrintWriter(new File("/home/ana/data/query2Out/" + i + ".dat" ))
+//      val pw = new PrintWriter(new File("/home/ana/data/query2Out/" + i + ".dat" ))
       val pw = new PrintWriter(new File("src/main/scala/query2Out/" + i + ".dat" ))
       pw.write(resultFile )
       pw.close
 
       // print for test
-      val printTemp4  : String = graphSize map { case (c, s) => "Comment : " + c + "\tSize : " + s} mkString ("\n")
-      println(printTemp4)
+//      val printTemp4  : String = graphSize map { case (c, s) => "Comment : " + c + "\tSize : " + s} mkString ("\n")
+//      println(printTemp4)
 
       /** processes regards to date */
       val date: Date = new Date(currentDate.getTime() + 1000 * 60 * 60 * 24) // 하루 지남

@@ -1,0 +1,34 @@
+Size : 8
+10|2010-05-18 20:39:14.366|8591074941|1099511628629|About Marilyn Manson, been multi-platinum. About Appeal to Reason, in the American .|Chen Li|8591074939|
+(name, group) :
+(Set(1099511628629, 1099511629519, 1099511629672, 4577, 3780, 4178, 3633, 3924),1) (Set(1099511632742),2) (Set(1099511628460),3)
+(source, target) : 
+(4577,3924) (1099511629672,3780) (4577,3633) (3924,3633) (1099511629672,1099511628629) (3780,3633) (1099511629672,1099511629519) (1099511629672,4178) (4577,3780) (3924,3780) (1099511629672,4577)
+
+Size : 1
+10|2010-05-21 04:58:40.442|8590489059|1847|About Augustine of Hip. About Tim McGraw, and . About No Diggity, usin. About Friday on .|Jun Zhang|8590489058|
+(name, group) :
+(Set(1099511628642),1)
+(source, target) : 
+
+
+Size : 1
+10|2010-05-20 06:52:57.778|8590943924|3705|About Abraham . About Benjamin. About Ludacris. About Éamon de. About Commonwe. About.|Bingjian Zhang|8590943923|
+(name, group) :
+(Set(3705),1)
+(source, target) : 
+
+
+Size : 1
+10|2010-05-16 11:38:02.971|8591001393|2698|About Benigno Aquino . About Weird Al Yankov. About Dueling Banjos,. About Long Distanc.|Alexander Efimkin|8591001389|
+(name, group) :
+(Set(2698),1)
+(source, target) : 
+
+
+Size : 0
+10|2010-05-16 05:16:11.544|8590367604|3558|About Howard Stern, one of the most popular radio personalities during his 20-yea.|Louis Nys||8590366927
+(name, group) :
+(Set(),1)
+(source, target) : 
+
