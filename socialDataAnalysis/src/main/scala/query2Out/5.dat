@@ -1,0 +1,34 @@
+Size : 4
+10|2010-03-04 10:19:40.546|406915|1259|About Antonio . About Carl Lin. About Charles . About Dionne W. About Socialis. About Ch.|Mee Vongvichit||404255
+(name, group) :
+(Set(1259),1) (Set(2886, 2608, 3412, 555),2) (Set(974),3)
+(source, target) : 
+(3412,555) (2886,2608) (2886,555) (3412,2886)
+
+Size : 0
+10|2010-03-06 18:11:29.448|1373253|1355|great|Peter Taylor|1373244|
+(name, group) :
+(Set(),1)
+(source, target) : 
+
+
+Size : 0
+10|2010-03-07 16:49:23.059|705588|459|About Plato, of footnotes to Plato. I do not mean the systemati. About Thomas More, separation from the Catholic Church and ref.|Jharana Bajracharya Rashid Shrestha||705078
+(name, group) :
+(Set(),1)
+(source, target) : 
+
+
+Size : 0
+10|2010-03-09 11:06:07.808|1048907|3705|fine|Bingjian Zhang||1048817
+(name, group) :
+(Set(),1)
+(source, target) : 
+
+
+Size : 0
+10|2010-03-05 15:42:08.71|168098|3092|no way!|Ning Zhang||167243
+(name, group) :
+(Set(),1)
+(source, target) : 
+

@@ -1,0 +1,34 @@
+Size : 5
+10|2010-05-27 07:42:20.694|8590592839|2317|About Dmitri Shostakovich, under the patronage of Leon Trotsky's chief of s.|Jiro Sato||8590592538
+(name, group) :
+(Set(2609),1) (Set(2317),2) (Set(555, 3060, 2874, 250, 1161),3)
+(source, target) : 
+(1161,555) (2874,1161) (3060,2874) (3060,250) (1161,250) (3060,1161) (555,250)
+
+Size : 3
+10|2010-05-24 15:44:56.739|8591024200|2698|About Na. About Re. About Je. About Be. About Ja. About Gi. About Ni. About Ne. About St..|Alexander Efimkin|8591024197|
+(name, group) :
+(Set(4139, 2698, 2292),1)
+(source, target) : 
+(4139,2698) (2698,2292)
+
+Size : 2
+10|2010-05-27 03:11:04.093|8591352096|870|About Quincy Jones, Hu. About Ice Cube, and di. About Norman Cook, con. About United Stat.|Dionysis Karvelas|8591352089|
+(name, group) :
+(Set(318),1) (Set(2965),2) (Set(1099511628176, 870),3)
+(source, target) : 
+(1099511628176,870)
+
+Size : 2
+10|2010-05-26 09:06:34.296|8590592752|2317|About Ronald Reagan, speech in support of Barry Goldwater's presidential candidacy.|Jiro Sato||8590592531
+(name, group) :
+(Set(3060, 2874),1)
+(source, target) : 
+(3060,2874)
+
+Size : 1
+10|2010-05-30 12:17:48.032|8590196048|1099511628255|About Dwayne Johnson, wre. About Refuse/Resist, for . About The Trouble with .|Rodrigo Balmaceda|8590196047|
+(name, group) :
+(Set(1099511631844),1) (Set(4534),2) (Set(1099511632296),3)
+(source, target) : 
+
