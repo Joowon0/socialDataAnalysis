@@ -1,5 +1,6 @@
 # Dynamic social data analysis using event processing systems
 
+
 ## Getting Started
 
 The purpose of this project is to find three most living posts in social network. Also, it should be able to find the biggest community that is discussing hot topic. If data is given, the new result should be updated in real-time.
@@ -59,7 +60,7 @@ This query addresses the change of interests with large communities.
 Given an integer k and a duration d (in seconds), find the k comments with the largest range, where the range of a comment is defined as the size of the largest connected component in the graph defined by persons who (a) have liked that comment (see likes, comments), (b) where the comment was created not more than d seconds ago, and (c) know each other (see friendships).
 k in 5 and d is 7 days in this program.
 
-### coding style
+### Coding Style
 
 The coding style comply http://www.scalastyle.org/
 
@@ -74,4 +75,4 @@ The coding style comply http://www.scalastyle.org/
 
 * **Gayoung Gim** - *Visualization*
 * **Joowon Byun** - *Programming in Scala*
-* **Hyeong Rok** - *Setting Environment*
+* **Hyeong Rok** - *Environment Setting*
