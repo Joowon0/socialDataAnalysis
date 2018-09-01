@@ -7,7 +7,7 @@ The purpose of this project is to find three most living posts in social network
 
 Specific details regrading to the project is written in the following link : https://docs.google.com/document/d/1n8mrKpVp0xEN-OD9A7P8o51s8gLZbJqlWGOWX0P_Ce0/edit?usp=sharing
 
-A powerpoint material is shown in the following link : https://drive.google.com/file/d/0B55KEbe4x0IDOVA1VE1raGUzcms/view?usp=sharing
+The powerpoint material is shown in the following link : https://drive.google.com/file/d/0B55KEbe4x0IDOVA1VE1raGUzcms/view?usp=sharing
 
 ### Prerequisites
 
@@ -66,7 +66,7 @@ k in 5 and d is 7 days in this program.
 
 ### Coding Style
 
-The coding style comply http://www.scalastyle.org/
+The coding style complies to http://www.scalastyle.org/
 
 
 ## Built With
