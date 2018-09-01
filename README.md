@@ -5,6 +5,8 @@
 
 The purpose of this project is to find three most living posts in social network. Also, it should be able to find the biggest community that is discussing hot topic. If data is given, the new result should be updated in real-time.
 
+Specific detail regrading to the project is written in the following link : https://docs.google.com/document/d/1n8mrKpVp0xEN-OD9A7P8o51s8gLZbJqlWGOWX0P_Ce0/edit?usp=sharing
+
 ### Prerequisites
 
 More than one computer is needed to excute this program. To proceed in distributed way, two computers is neccessary: one master computer, one or more than one slave computer. All of the computers need Apache Spark to be installed.
