@@ -5,7 +5,8 @@
 
 The purpose of this project is to find three most living posts in social network. Also, it should be able to find the biggest community that is discussing hot topic. If data is given, the new result should be updated in real-time.
 
-Specific detail regrading to the project is written in the following link : https://docs.google.com/document/d/1n8mrKpVp0xEN-OD9A7P8o51s8gLZbJqlWGOWX0P_Ce0/edit?usp=sharing
+Specific details regrading to the project is written in the following link : https://docs.google.com/document/d/1n8mrKpVp0xEN-OD9A7P8o51s8gLZbJqlWGOWX0P_Ce0/edit?usp=sharing
+A powerpoint material is shown in the following link : https://drive.google.com/file/d/0B55KEbe4x0IDOVA1VE1raGUzcms/view?usp=sharing
 
 ### Prerequisites
 
